@@ -436,7 +436,7 @@
         <div><div class="page-title"><span>FAS</span> — Dashboard</div><div style="color:var(--text-soft);font-size:11px;margin-top:3px" id="dash-date"></div></div>
         <button class="btn btn-outline btn-sm" onclick="syncAll()">🔄 Sincronizar</button>
       </div>
-      <div id="setup-banner-area"></div>
+      <div style="display:none" id="setup-banner-area"></div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">👥 Clientes</div><div class="stat-value" id="stat-clientes">0</div><div class="stat-sub">cadastrados</div></div>
         <div class="stat-card"><div class="stat-label">📦 Produtos</div><div class="stat-value" id="stat-produtos">0</div><div class="stat-sub">no catálogo</div></div>
@@ -648,7 +648,8 @@
 // ═══════════════════════════════════════════════════════
 // CONFIGURAÇÃO — cole sua URL do Apps Script aqui:
 // ═══════════════════════════════════════════════════════
-let API_URL = localStorage.getItem('fas_api_url') || '';
+const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5G5TgBGAtp4oDevs0EkNA8wq52MlUJMde3zviCUo1y8COysISBqu2wfnaPYH3cdG1/exec';
+let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 
 // ═══════════════════════════════════════════════════════
 // STATE LOCAL (cache)
@@ -664,19 +665,59 @@ let cfg = {
 let editingId=null, docType='orcamento', docItems=[], viewingDoc=null;
 
 // ═══════════════════════════════════════════════════════
-// API — Google Sheets
+// API — Google Sheets (via JSONP para evitar CORS)
 // ═══════════════════════════════════════════════════════
+
+// JSONP: injeta <script> na página para burlar CORS do Apps Script
+function apiJsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+    // Apps Script ignora callback JSONP — usamos script tag + polling não é confiável
+    // Melhor abordagem: fetch com mode no-cors não retorna body
+    // Usamos fetch direto — Apps Script com "Qualquer pessoa" já inclui CORS no header
+    const qs = Object.entries(params).map(([k,v])=>`${k}=${encodeURIComponent(String(v))}`).join('&');
+    fetch(`${API_URL}?${qs}`, { method: 'GET' })
+      .then(r => r.json())
+      .then(json => {
+        if (!json.ok) reject(new Error(json.error || 'Erro'));
+        else resolve(json);
+      })
+      .catch(reject);
+  });
+}
+
 async function api(params) {
   if (!API_URL) throw new Error('URL não configurada');
-  const qs = Object.entries(params).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&');
-  const r = await fetch(`${API_URL}?${qs}`);
+  const qs = Object.entries(params).map(([k,v])=>`${k}=${encodeURIComponent(String(v))}`).join('&');
+  const r = await fetch(`${API_URL}?${qs}`, {
+    method: 'GET',
+    redirect: 'follow',
+  });
+  const json = await r.json();
+  if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
+  return json;
+}
+
+async function apiPost(body) {
+  if (!API_URL) throw new Error('URL não configurada');
+  // Apps Script redireciona POST — precisamos seguir o redirect manualmente
+  // Alternativa: enviar via GET com dados serializados (funciona para payloads menores)
+  // Para imagens grandes usamos chunks ou POST com redirect follow
+  const r = await fetch(API_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    body: JSON.stringify(body),
+  });
   const json = await r.json();
   if (!json.ok) throw new Error(json.error || 'Erro desconhecido');
   return json;
 }
 
 async function apiSave(sheet, row) {
-  return api({ action:'save', sheet, row: JSON.stringify(row) });
+  // Serializa items para não estourar URL
+  const rowCopy = Object.assign({}, row);
+  if (Array.isArray(rowCopy.items)) rowCopy.items = JSON.stringify(rowCopy.items);
+  return api({ action:'save', sheet, row: JSON.stringify(rowCopy) });
 }
 async function apiDelete(sheet, id) {
   return api({ action:'delete', sheet, id });
@@ -685,6 +726,7 @@ async function apiGetAll(sheet) {
   const r = await api({ action:'getAll', sheet });
   return r.data || [];
 }
+
 
 function setSyncStatus(state, text) {
   const dot = document.getElementById('sync-dot');
@@ -699,12 +741,6 @@ function setSyncStatus(state, text) {
 // ═══════════════════════════════════════════════════════
 async function init() {
   loadLocalConfig();
-  if (!API_URL) {
-    setSyncStatus('error', 'Sem conexão — configure a URL nas Configurações');
-    showSetupBanner();
-    loadLocalCache();
-    return;
-  }
   await syncAll();
 }
 
@@ -731,7 +767,7 @@ function loadLocalConfig() {
   try {
     const s = localStorage.getItem('fas_config');
     if(s) Object.assign(cfg, JSON.parse(s));
-    API_URL = localStorage.getItem('fas_api_url') || '';
+    API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
     populateConfigForm();
   } catch(e){}
 }
@@ -845,7 +881,7 @@ function populateConfigForm(){
   document.getElementById('cfg-prefix-rec').value=cfg.prefixRec||'REC';
   document.getElementById('cfg-validade').value=cfg.validade||30;
   document.getElementById('cfg-moeda').value=cfg.moeda||'R$';
-  document.getElementById('cfg-api-url').value=API_URL||'';
+  document.getElementById('cfg-api-url').value = API_URL || API_URL_PADRAO;
   // carregar previews de logo e assinatura
   const logo=localStorage.getItem('fas_logo')||'';
   const assin=localStorage.getItem('fas_assinatura')||'';
@@ -1136,16 +1172,18 @@ function abrirEmail(){
 // LOGO & ASSINATURA — com sincronização na nuvem
 // ═══════════════════════════════════════════════════════
 
-// Salva imagem via POST no Google Sheets
+// Salva imagem via GET (Apps Script aceita URLs longas no doGet)
 async function salvarImagemNuvem(chave, valor) {
-  if (!API_URL) return; // sem URL configurada, só salva local
+  if (!API_URL) return;
   try {
+    // Imagens são grandes — usamos POST com redirect follow
     await fetch(API_URL, {
       method: 'POST',
+      redirect: 'follow',
       body: JSON.stringify({ action: 'saveImagem', chave, valor }),
     });
   } catch(e) {
-    console.warn('Não foi possível salvar imagem na nuvem:', e);
+    console.warn('Erro ao salvar imagem na nuvem:', e);
   }
 }
 
@@ -1153,7 +1191,10 @@ async function salvarImagemNuvem(chave, valor) {
 async function carregarImagemNuvem(chave) {
   if (!API_URL) return '';
   try {
-    const r = await fetch(`${API_URL}?action=getImagem&chave=${chave}`);
+    const r = await fetch(`${API_URL}?action=getImagem&chave=${encodeURIComponent(chave)}`, {
+      method: 'GET',
+      redirect: 'follow',
+    });
     const j = await r.json();
     return (j.ok && j.valor) ? j.valor : '';
   } catch(e) { return ''; }
