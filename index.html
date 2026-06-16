@@ -292,7 +292,7 @@
 <div class="login-screen show" id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <img src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png"
+      <img id="login-logo-img" src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png"
         alt="FAS" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
       <div id="logo-fallback" class="login-logo-fallback" style="display:none"><span>FAS</span> Segurança</div>
       <div class="login-logo-sub">Sistema de Gestão</div>
@@ -350,9 +350,9 @@
 <div class="topbar">
   <button class="hamburger" onclick="toggleMobileSidebar()">☰</button>
   <div class="topbar-logo">
-    <img src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png"
-      alt="FAS" onerror="this.style.display='none';this.nextSibling.style.display='block'">
-    <span style="display:none;font-family:'Montserrat',sans-serif;font-weight:900;font-size:16px;color:#fff"><span style="color:var(--orange)">FAS</span> Segurança</span>
+    <img id="topbar-logo" src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png"
+      alt="FAS" style="height:34px;object-fit:contain;" onerror="this.style.display='none';document.getElementById('topbar-logo-text').style.display='block'">
+    <span id="topbar-logo-text" style="display:none;font-family:'Montserrat',sans-serif;font-weight:900;font-size:16px;color:#fff"><span style="color:var(--orange)">FAS</span> Segurança</span>
   </div>
   <div class="user-chip" onclick="sair()" id="topbar-user-chip" title="Clique para sair">
     <div class="user-dot admin" id="topbar-user-dot"></div>
@@ -367,10 +367,13 @@
   <!-- SIDEBAR -->
   <aside class="sidebar mobile-hidden" id="sidebar">
     <div class="logo">
-      <div class="logo-icon"><img src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_60,h_60,al_c,q_85,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png" alt="FAS"></div>
+      <div class="logo-icon"><img id="sidebar-logo-icon" src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_60,h_60,al_c,q_85,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png" alt="FAS"></div>
       <div class="logo-texts">
-        <img class="logo-img" src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png" alt="FAS Segurança" onerror="this.style.display='none';this.nextSibling.style.display='block'">
-        <span style="display:none;font-family:'Montserrat',sans-serif;font-weight:900;font-size:16px;color:#fff"><span style="color:var(--orange)">FAS</span> Segurança</span>
+        <img class="logo-img" id="sidebar-logo-main"
+          src="https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png"
+          alt="FAS Segurança"
+          onerror="this.style.display='none';document.getElementById('sidebar-logo-text').style.display='block'">
+        <span id="sidebar-logo-text" style="display:none;font-family:'Montserrat',sans-serif;font-weight:900;font-size:16px;color:#fff"><span style="color:var(--orange)">FAS</span> Segurança</span>
         <div class="logo-sub">Sistema de Gestão</div>
       </div>
     </div>
@@ -512,7 +515,47 @@
           </div>
         </div>
         <div class="config-section">
-          <h3>📋 Padrões de Documento</h3>
+          <h3>🖼️ Logo & Assinatura</h3>
+          <div class="form-grid">
+            <!-- LOGO -->
+            <div class="form-group full">
+              <label>Logo da Empresa</label>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px;">
+                <div style="background:var(--navy);border:2px dashed var(--navy-border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:center;min-width:160px;min-height:70px;position:relative;overflow:hidden;">
+                  <img id="cfg-logo-preview" src="" alt="Logo" style="max-height:56px;max-width:160px;object-fit:contain;display:none;">
+                  <span id="cfg-logo-placeholder" style="font-size:11px;color:var(--text-soft);font-family:'Montserrat',sans-serif;">Nenhuma logo</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <label for="cfg-logo-file" class="btn btn-outline btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                    📁 Escolher arquivo
+                    <input type="file" id="cfg-logo-file" accept="image/*" style="display:none" onchange="onLogoChange(this)">
+                  </label>
+                  <button class="btn btn-red btn-sm" onclick="removerLogo()">🗑 Remover logo</button>
+                  <span style="font-size:10px;color:var(--text-soft);font-family:'Montserrat',sans-serif;">PNG, JPG ou SVG<br>Recomendado: fundo transparente</span>
+                </div>
+              </div>
+            </div>
+            <!-- ASSINATURA -->
+            <div class="form-group full">
+              <label>Assinatura Digital (aparece nos documentos)</label>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px;">
+                <div style="background:#fff;border:2px dashed var(--navy-border);border-radius:10px;padding:10px 16px;display:flex;align-items:center;justify-content:center;min-width:200px;min-height:80px;position:relative;overflow:hidden;">
+                  <img id="cfg-assinatura-preview" src="" alt="Assinatura" style="max-height:64px;max-width:200px;object-fit:contain;display:none;">
+                  <span id="cfg-assinatura-placeholder" style="font-size:11px;color:#9ca3af;font-family:'Montserrat',sans-serif;">Nenhuma assinatura</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <label for="cfg-assinatura-file" class="btn btn-outline btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                    📁 Escolher arquivo
+                    <input type="file" id="cfg-assinatura-file" accept="image/*" style="display:none" onchange="onAssinaturaChange(this)">
+                  </label>
+                  <button class="btn btn-red btn-sm" onclick="removerAssinatura()">🗑 Remover assinatura</button>
+                  <span style="font-size:10px;color:var(--text-soft);font-family:'Montserrat',sans-serif;">PNG com fundo transparente<br>recomendado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
           <div class="form-grid">
             <div class="form-group"><label>Prefixo Orçamento</label><input id="cfg-prefix-orc" value="ORC"></div>
             <div class="form-group"><label>Prefixo Recibo</label><input id="cfg-prefix-rec" value="REC"></div>
@@ -709,6 +752,7 @@ async function syncAll() {
     saveLocalCache();
     setSyncStatus('ok', 'Conectado ao Google Sheets');
     renderAll();
+    carregarImagensSalvas(); // sincroniza logo e assinatura da nuvem
     showToast('Dados sincronizados!');
   } catch(e) {
     setSyncStatus('error', 'Erro de conexão — usando cache local');
@@ -802,6 +846,11 @@ function populateConfigForm(){
   document.getElementById('cfg-validade').value=cfg.validade||30;
   document.getElementById('cfg-moeda').value=cfg.moeda||'R$';
   document.getElementById('cfg-api-url').value=API_URL||'';
+  // carregar previews de logo e assinatura
+  const logo=localStorage.getItem('fas_logo')||'';
+  const assin=localStorage.getItem('fas_assinatura')||'';
+  atualizarLogoPreview(logo);
+  atualizarAssinaturaPreview(assin);
 }
 async function salvarConfig(){
   const url = document.getElementById('cfg-api-url').value.trim();
@@ -1033,43 +1082,26 @@ function buildPDF(doc,type){
   const isOrc=type==='orcamento';
   const cl=db.clientes.find(x=>x.id===doc.clienteId)||{};
   const items=Array.isArray(doc.items)?doc.items:[];
-  return`<div class="pdf-doc" id="pdf-printable">
+  const logoData=localStorage.getItem('fas_logo')||'';
+  const assinData=localStorage.getItem('fas_assinatura')||'';
+  const logoHtml=logoData?`<img src="${logoData}" style="max-height:60px;max-width:190px;object-fit:contain;display:block;">`:`<div style="font-family:Montserrat,sans-serif;font-size:17px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>`;
+  const assinHtml=assinData?`<div><img src="${assinData}" style="max-height:54px;max-width:170px;object-fit:contain;display:block;margin:0 auto 2px;"></div>`:'';
+  const footerLogo=logoData?`<img src="${logoData}" style="height:20px;object-fit:contain;">`:`<span style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança</span>`;
+  return `<div class="pdf-doc" id="pdf-printable">
     <div class="pdf-header">
-      <div>
-        <div class="pdf-brand-name"><span>FAS</span> Segurança Eletrônica</div>
-        ${cfg.cnpj?`<div class="pdf-brand-sub">CNPJ: ${cfg.cnpj}</div>`:''}
-        ${cfg.endereco?`<div class="pdf-brand-sub">📍 ${cfg.endereco}</div>`:''}
-        ${cfg.tel?`<div class="pdf-brand-sub">📞 ${cfg.tel}</div>`:''}
-        ${cfg.email?`<div class="pdf-brand-sub">✉ ${cfg.email}</div>`:''}
-      </div>
-      <div class="pdf-doc-badge">
-        <div class="pdf-doc-type">${isOrc?'ORÇAMENTO':'RECIBO DE PAGAMENTO'}</div>
-        <div class="pdf-doc-num">Nº ${doc.numero}</div>
-        <div class="pdf-doc-date">Data: ${fmtDate(doc.data)}</div>
-      </div>
+      <div>${logoHtml}${cfg.cnpj?`<div class="pdf-brand-sub" style="margin-top:5px">CNPJ: ${cfg.cnpj}</div>`:""}${cfg.endereco?`<div class="pdf-brand-sub">📍 ${cfg.endereco}</div>`:""}${cfg.tel?`<div class="pdf-brand-sub">📞 ${cfg.tel}</div>`:""}${cfg.email?`<div class="pdf-brand-sub">✉ ${cfg.email}</div>`:""}</div>
+      <div class="pdf-doc-badge"><div class="pdf-doc-type">${isOrc?"ORÇAMENTO":"RECIBO DE PAGAMENTO"}</div><div class="pdf-doc-num">Nº ${doc.numero}</div><div class="pdf-doc-date">Data: ${fmtDate(doc.data)}</div></div>
     </div>
-    <div class="pdf-section">
-      <div class="pdf-section-title">Cliente</div>
-      <div class="pdf-client-box">
-        <div class="pdf-client-name">${doc.clienteNome}</div>
-        ${cl.doc?`<div class="pdf-client-info">CPF/CNPJ: ${cl.doc}</div>`:''}
-        ${cl.tel?`<div class="pdf-client-info">Tel: ${cl.tel}</div>`:''}
-        ${cl.email?`<div class="pdf-client-info">Email: ${cl.email}</div>`:''}
-        ${cl.endereco?`<div class="pdf-client-info">📍 ${cl.endereco}${cl.cidade?' - '+cl.cidade:''}${cl.estado?'/'+cl.estado:''}</div>`:''}
-      </div>
+    <div class="pdf-section"><div class="pdf-section-title">Cliente</div><div class="pdf-client-box"><div class="pdf-client-name">${doc.clienteNome}</div>${cl.doc?`<div class="pdf-client-info">CPF/CNPJ: ${cl.doc}</div>`:""}${cl.tel?`<div class="pdf-client-info">Tel: ${cl.tel}</div>`:""}${cl.email?`<div class="pdf-client-info">Email: ${cl.email}</div>`:""}${cl.endereco?`<div class="pdf-client-info">📍 ${cl.endereco}${cl.cidade?" - "+cl.cidade:""}${cl.estado?"/"+cl.estado:""}</div>`:""}</div></div>
+    <div class="pdf-section"><div class="pdf-section-title">${isOrc?"Itens do Orçamento":"Itens"}</div><table class="pdf-table"><thead><tr><th>Descrição</th><th>Qtd</th><th>Un.</th><th>Unitário</th><th>Subtotal</th></tr></thead><tbody>${items.map(item=>`<tr><td>${item.desc}</td><td>${item.qtd}</td><td>${item.unidade||"un"}</td><td>${fmtMoney(item.preco)}</td><td><b>${fmtMoney(item.sub)}</b></td></tr>`).join("")}</tbody></table></div>
+    <div class="pdf-total-row"><div class="pdf-total-box"><div class="pdf-total-label">TOTAL${!isOrc?" — PAGO":""}</div><div class="pdf-total-value">${fmtMoney(doc.total)}</div>${!isOrc?`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">Forma: ${doc.pagamento}</div>`:""}</div></div>
+    ${isOrc?`<div class="pdf-validity">⏳ Válido até <b>${fmtDate(doc.validade)}</b></div>`:""}
+    ${doc.obs?`<div class="pdf-section" style="margin-top:14px"><div class="pdf-section-title">Observações</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 13px;background:#f9fafb;border-radius:8px">${doc.obs}</div></div>`:""}
+    <div style="margin-top:28px;border-top:1px solid #e5e7eb;padding-top:14px;display:flex;justify-content:space-between;align-items:flex-end;">
+      ${!isOrc?`<div style="font-size:11px;color:#6b7280;max-width:48%">Declaro que recebi o valor acima referente aos serviços/produtos listados.</div>`:"<div></div>"}
+      <div style="text-align:center;">${assinHtml}<div style="border-top:1px solid #374151;padding-top:5px;font-size:11px;color:#6b7280;min-width:180px;">${cfg.nome||"FAS Segurança Eletrônica"}<br>${isOrc?"Responsável":"Assinatura do Responsável"}</div></div>
     </div>
-    <div class="pdf-section">
-      <div class="pdf-section-title">${isOrc?'Itens do Orçamento':'Itens'}</div>
-      <table class="pdf-table">
-        <thead><tr><th>Descrição</th><th>Qtd</th><th>Un.</th><th>Unitário</th><th>Subtotal</th></tr></thead>
-        <tbody>${items.map(item=>`<tr><td>${item.desc}</td><td>${item.qtd}</td><td>${item.unidade||'un'}</td><td>${fmtMoney(item.preco)}</td><td><b>${fmtMoney(item.sub)}</b></td></tr>`).join('')}</tbody>
-      </table>
-    </div>
-    <div class="pdf-total-row"><div class="pdf-total-box"><div class="pdf-total-label">TOTAL${!isOrc?' — PAGO':''}</div><div class="pdf-total-value">${fmtMoney(doc.total)}</div>${!isOrc?`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">Forma: ${doc.pagamento}</div>`:''}</div></div>
-    ${isOrc?`<div class="pdf-validity">⏳ Válido até <b>${fmtDate(doc.validade)}</b></div>`:''}
-    ${doc.obs?`<div class="pdf-section" style="margin-top:14px"><div class="pdf-section-title">Observações</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 13px;background:#f9fafb;border-radius:8px">${doc.obs}</div></div>`:''}
-    ${!isOrc?`<div style="margin-top:26px;border-top:1px solid #e5e7eb;padding-top:14px;display:flex;justify-content:space-between;align-items:flex-end"><div style="font-size:11px;color:#6b7280">Declaro que recebi o valor acima referente aos serviços/produtos listados.</div><div style="text-align:center"><div style="border-top:1px solid #374151;padding-top:6px;font-size:11px;color:#6b7280;min-width:180px">${doc.clienteNome}<br>Assinatura</div></div></div>`:''}
-    <div class="pdf-footer"><div class="pdf-footer-logo"><span>FAS</span> Segurança Eletrônica</div><div style="font-size:10px;text-align:right">${cfg.rodape}</div></div>
+    <div class="pdf-footer"><div class="pdf-footer-logo">${footerLogo}</div><div style="font-size:10px;text-align:right;color:#9ca3af;">${cfg.rodape}</div></div>
   </div>`;
 }
 function downloadPDF(){
@@ -1096,6 +1128,163 @@ function abrirEmail(){
   downloadPDF();
   setTimeout(()=>{window.open(`mailto:${email}?subject=${subj}&body=${body}`,'_blank');},800);
 }
+
+// ═══════════════════════════════════════════════════════
+// LOGO & ASSINATURA
+// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// LOGO & ASSINATURA — com sincronização na nuvem
+// ═══════════════════════════════════════════════════════
+
+// Salva imagem via POST no Google Sheets
+async function salvarImagemNuvem(chave, valor) {
+  if (!API_URL) return; // sem URL configurada, só salva local
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveImagem', chave, valor }),
+    });
+  } catch(e) {
+    console.warn('Não foi possível salvar imagem na nuvem:', e);
+  }
+}
+
+// Carrega imagem da nuvem
+async function carregarImagemNuvem(chave) {
+  if (!API_URL) return '';
+  try {
+    const r = await fetch(`${API_URL}?action=getImagem&chave=${chave}`);
+    const j = await r.json();
+    return (j.ok && j.valor) ? j.valor : '';
+  } catch(e) { return ''; }
+}
+
+function onLogoChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  // Verificar tamanho (máx 1MB recomendado)
+  if (file.size > 1.5 * 1024 * 1024) {
+    showToast('Imagem muito grande. Use uma imagem menor que 1.5MB.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const data = e.target.result;
+    showLoading('Salvando logo na nuvem...');
+    localStorage.setItem('fas_logo', data);
+    atualizarLogoPreview(data);
+    atualizarLogoSistema(data);
+    await salvarImagemNuvem('fas_logo', data);
+    hideLoading();
+    showToast('Logo salva e sincronizada! ✓');
+  };
+  reader.readAsDataURL(file);
+}
+
+function onAssinaturaChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 1.5 * 1024 * 1024) {
+    showToast('Imagem muito grande. Use uma imagem menor que 1.5MB.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const data = e.target.result;
+    showLoading('Salvando assinatura na nuvem...');
+    localStorage.setItem('fas_assinatura', data);
+    atualizarAssinaturaPreview(data);
+    await salvarImagemNuvem('fas_assinatura', data);
+    hideLoading();
+    showToast('Assinatura salva e sincronizada! ✓');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function removerLogo() {
+  if (!confirm('Remover a logo?')) return;
+  showLoading('Removendo...');
+  localStorage.removeItem('fas_logo');
+  atualizarLogoPreview('');
+  atualizarLogoSistema('');
+  await salvarImagemNuvem('fas_logo', '');
+  hideLoading();
+  showToast('Logo removida');
+}
+
+async function removerAssinatura() {
+  if (!confirm('Remover a assinatura?')) return;
+  showLoading('Removendo...');
+  localStorage.removeItem('fas_assinatura');
+  atualizarAssinaturaPreview('');
+  await salvarImagemNuvem('fas_assinatura', '');
+  hideLoading();
+  showToast('Assinatura removida');
+}
+
+function atualizarLogoPreview(data) {
+  const img = document.getElementById('cfg-logo-preview');
+  const ph  = document.getElementById('cfg-logo-placeholder');
+  if (!img) return;
+  if (data) { img.src = data; img.style.display = 'block'; ph.style.display = 'none'; }
+  else       { img.src = '';  img.style.display = 'none';  ph.style.display = 'block'; }
+}
+
+function atualizarAssinaturaPreview(data) {
+  const img = document.getElementById('cfg-assinatura-preview');
+  const ph  = document.getElementById('cfg-assinatura-placeholder');
+  if (!img) return;
+  if (data) { img.src = data; img.style.display = 'block'; ph.style.display = 'none'; }
+  else       { img.src = '';  img.style.display = 'none';  ph.style.display = 'block'; }
+}
+
+function atualizarLogoSistema(data) {
+  const DEFAULT_FULL = 'https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_349,h_111,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png';
+  const DEFAULT_ICON = 'https://static.wixstatic.com/media/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png/v1/crop/x_0,y_14,w_4890,h_1561/fill/w_60,h_60,al_c,q_85,enc_avif,quality_auto/58bff2_a2cab638891448feb4f8302a09e736c6~mv2_d_4890_1842_s_2.png';
+  const src      = data || DEFAULT_FULL;
+  const showText = !data;
+  const pairs = [
+    ['topbar-logo',      'topbar-logo-text'],
+    ['sidebar-logo-main','sidebar-logo-text'],
+    ['login-logo-img',   'logo-fallback'],
+  ];
+  pairs.forEach(([imgId, textId]) => {
+    const img = document.getElementById(imgId);
+    const txt = document.getElementById(textId);
+    if (img) { img.src = src; img.style.display = showText ? 'none' : 'block'; }
+    if (txt) txt.style.display = showText ? 'block' : 'none';
+  });
+  const si = document.getElementById('sidebar-logo-icon');
+  if (si) si.src = data || DEFAULT_ICON;
+}
+
+// Carrega imagens: primeiro do localStorage (rápido), depois sincroniza da nuvem
+async function carregarImagensSalvas() {
+  // 1. Mostrar cache local imediatamente
+  const logoLocal  = localStorage.getItem('fas_logo') || '';
+  const assinLocal = localStorage.getItem('fas_assinatura') || '';
+  if (logoLocal)  { atualizarLogoPreview(logoLocal);  atualizarLogoSistema(logoLocal); }
+  if (assinLocal)   atualizarAssinaturaPreview(assinLocal);
+
+  // 2. Buscar da nuvem em background (se tiver URL)
+  if (!API_URL) return;
+  try {
+    const [logoNuvem, assinNuvem] = await Promise.all([
+      carregarImagemNuvem('fas_logo'),
+      carregarImagemNuvem('fas_assinatura'),
+    ]);
+    if (logoNuvem && logoNuvem !== logoLocal) {
+      localStorage.setItem('fas_logo', logoNuvem);
+      atualizarLogoPreview(logoNuvem);
+      atualizarLogoSistema(logoNuvem);
+    }
+    if (assinNuvem && assinNuvem !== assinLocal) {
+      localStorage.setItem('fas_assinatura', assinNuvem);
+      atualizarAssinaturaPreview(assinNuvem);
+    }
+  } catch(e) { /* falha silenciosa */ }
+}
+
 
 // ── FILTER ──
 function filterLocal(type,val){if(type==='clientes')renderClientes(val);if(type==='produtos')renderProdutos(val);}
@@ -1215,6 +1404,7 @@ function sair() {
 
 // ── START ──
 window.addEventListener('resize',()=>{if(docItems.length)renderDocItems();});
+carregarImagensSalvas(); // carrega logo/assinatura do cache local e depois da nuvem
 </script>
 </body>
 </html>
