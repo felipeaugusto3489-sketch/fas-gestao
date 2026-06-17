@@ -155,7 +155,7 @@
   .row-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
   .row-card-title{font-weight:700;font-size:14px;color:var(--white);font-family:'Montserrat',sans-serif;}
   .row-card-value{font-weight:700;font-size:13px;color:var(--green);}
-  .row-card-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--text-soft);margin-bottom:5px;}
+  .row-card-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;color:#8ab0c8;margin-bottom:5px;}
   .row-card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--navy-border);}
 
   /* ── MODAL ── */
@@ -205,32 +205,37 @@
   .item-block-sub{text-align:right;font-size:13px;font-weight:700;color:var(--orange-h);margin-top:6px;}
 
   /* ── PDF ── */
-  .pdf-doc{background:#fff;color:#111;font-family:'Open Sans',sans-serif;padding:38px;max-width:794px;margin:0 auto;}
-  .pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;padding-bottom:18px;border-bottom:3px solid #0E2432;}
-  .pdf-brand-name{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#0E2432;}
+  .pdf-doc{background:#fff;color:#111;font-family:'Open Sans',sans-serif;padding:24px;max-width:794px;margin:0 auto;font-size:13px;}
+  .pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:14px;border-bottom:3px solid #0E2432;gap:12px;flex-wrap:wrap;}
+  .pdf-brand-name{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:#0E2432;}
   .pdf-brand-name span{color:#e8500a;}
-  .pdf-brand-sub{font-size:11px;color:#6b7280;margin-top:2px;}
-  .pdf-doc-badge{background:#0E2432;color:#fff;padding:10px 20px;border-radius:8px;text-align:center;}
-  .pdf-doc-type{font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;letter-spacing:.05em;}
-  .pdf-doc-num{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
-  .pdf-doc-date{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;}
-  .pdf-section{margin-bottom:16px;}
-  .pdf-section-title{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9ca3af;margin-bottom:6px;}
-  .pdf-client-box{background:#f4f6f9;border-left:4px solid #e8500a;border-radius:0 8px 8px 0;padding:11px 14px;}
-  .pdf-client-name{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:700;color:#0E2432;}
-  .pdf-client-info{font-size:12px;color:#6b7280;margin-top:2px;}
-  .pdf-table{width:100%;border-collapse:collapse;margin-bottom:11px;}
-  .pdf-table th{text-align:left;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;padding:7px 9px;border-bottom:2px solid #e5e7eb;background:#f9fafb;}
-  .pdf-table td{padding:9px;border-bottom:1px solid #f3f4f6;font-size:12px;}
+  .pdf-brand-sub{font-size:10px;color:#374151;margin-top:2px;}
+  .pdf-doc-badge{background:#0E2432;color:#fff;padding:8px 14px;border-radius:8px;text-align:center;flex-shrink:0;}
+  .pdf-doc-type{font-family:'Montserrat',sans-serif;font-weight:800;font-size:11px;letter-spacing:.05em;}
+  .pdf-doc-num{font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;}
+  .pdf-doc-date{font-size:9px;color:rgba(255,255,255,.6);margin-top:2px;}
+  .pdf-section{margin-bottom:14px;}
+  .pdf-section-title{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;}
+  .pdf-client-box{background:#f4f6f9;border-left:4px solid #e8500a;border-radius:0 8px 8px 0;padding:10px 12px;}
+  .pdf-client-name{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#0E2432;}
+  .pdf-client-info{font-size:11px;color:#374151;margin-top:2px;}
+  .pdf-table{width:100%;border-collapse:collapse;margin-bottom:10px;table-layout:fixed;}
+  .pdf-table th{text-align:left;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 6px;border-bottom:2px solid #e5e7eb;background:#f1f3f5;white-space:nowrap;}
+  .pdf-table td{padding:7px 6px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;word-break:break-word;vertical-align:top;}
+  .pdf-table td:first-child{width:40%;}
+  .pdf-table td:nth-child(2),.pdf-table td:nth-child(3){width:8%;text-align:center;}
+  .pdf-table td:nth-child(4),.pdf-table td:nth-child(5){width:22%;text-align:right;}
+  .pdf-table th:nth-child(2),.pdf-table th:nth-child(3){text-align:center;}
+  .pdf-table th:nth-child(4),.pdf-table th:nth-child(5){text-align:right;}
   .pdf-table tr:nth-child(even) td{background:#fafbfc;}
   .pdf-table tr:last-child td{border-bottom:none;}
   .pdf-total-row{display:flex;justify-content:flex-end;}
-  .pdf-total-box{background:#0E2432;color:#fff;border-radius:10px;padding:14px 20px;text-align:right;min-width:180px;}
-  .pdf-total-label{font-family:'Montserrat',sans-serif;font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase;}
-  .pdf-total-value{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:#e8500a;}
-  .pdf-validity{background:#fff8f4;border:1px solid #fbd5c0;border-left:4px solid #e8500a;border-radius:0 8px 8px 0;padding:9px 13px;font-size:12px;color:#7c3100;margin-top:11px;}
-  .pdf-footer{margin-top:24px;padding-top:12px;border-top:2px solid #0E2432;font-size:11px;color:#9ca3af;display:flex;justify-content:space-between;align-items:center;}
-  .pdf-footer-logo{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#0E2432;}
+  .pdf-total-box{background:#0E2432;color:#fff;border-radius:8px;padding:10px 16px;text-align:right;min-width:150px;}
+  .pdf-total-label{font-family:'Montserrat',sans-serif;font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;}
+  .pdf-total-value{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:#e8500a;}
+  .pdf-validity{background:#fff8f4;border:1px solid #fbd5c0;border-left:4px solid #e8500a;border-radius:0 8px 8px 0;padding:8px 12px;font-size:11px;color:#7c3100;margin-top:10px;}
+  .pdf-footer{margin-top:16px;padding-top:10px;border-top:2px solid #0E2432;font-size:10px;color:#374151;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+  .pdf-footer-logo{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#0E2432;}
   .pdf-footer-logo span{color:#e8500a;}
 
   /* ── MISC ── */
@@ -631,14 +636,14 @@
 </div>
 
 <div class="overlay" id="modal-view">
-  <div class="modal modal-lg" style="padding:14px;">
-    <div class="modal-header"><div class="modal-title" id="modal-view-title">Visualizar</div><button class="close-btn" onclick="closeModal('modal-view')">✕</button></div>
-    <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;">
+  <div class="modal modal-lg" style="padding:14px;display:flex;flex-direction:column;max-height:94vh;">
+    <div class="modal-header" style="flex-shrink:0;margin-bottom:10px;"><div class="modal-title" id="modal-view-title">Visualizar</div><button class="close-btn" onclick="closeModal('modal-view')">✕</button></div>
+    <div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;flex-shrink:0;">
       <button class="btn btn-primary btn-sm" onclick="downloadPDF()">⬇ PDF</button>
       <button class="btn btn-whatsapp btn-sm" onclick="enviarWhatsApp()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> WhatsApp</button>
       <button class="btn btn-outline btn-sm" onclick="abrirEmail()">📧 E-mail</button>
     </div>
-    <div style="background:#d1d5db;border-radius:10px;padding:14px;overflow:auto;max-height:60vh;"><div id="pdf-content"></div></div>
+    <div style="background:#d1d5db;border-radius:10px;padding:10px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;-webkit-overflow-scrolling:touch;"><div id="pdf-content"></div></div>
   </div>
 </div>
 
@@ -937,7 +942,7 @@ async function salvarCliente(){
 function renderClientes(filter=''){
   const list=filter?db.clientes.filter(c=>c.nome.toLowerCase().includes(filter.toLowerCase())):db.clientes;
   const empty='<div class="empty-state"><div class="empty-icon">👥</div>Nenhum cliente</div>';
-  document.getElementById('tbody-clientes').innerHTML=!list.length?`<tr><td colspan="4">${empty}</td></tr>`:list.map(c=>`<tr><td><b>${c.nome}</b><br><span style="color:var(--text-soft);font-size:11px">${c.email||''}</span></td><td>${c.tel||'—'}</td><td>${c.cidade||'—'}${c.estado?' - '+c.estado:''}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></td></tr>`).join('');
+  document.getElementById('tbody-clientes').innerHTML=!list.length?`<tr><td colspan="4">${empty}</td></tr>`:list.map(c=>`<tr><td><b>${c.nome}</b><br><span style="color:#8ab0c8;font-size:11px">${c.email||''}</span></td><td>${c.tel||'—'}</td><td>${c.cidade||'—'}${c.estado?' - '+c.estado:''}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></td></tr>`).join('');
   document.getElementById('cards-clientes').innerHTML=!list.length?empty:list.map(c=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${c.nome}</span></div><div class="row-card-meta">${c.tel?`<span>📞 ${c.tel}</span>`:''} ${c.email?`<span>✉ ${c.email}</span>`:''} ${c.cidade?`<span>📍 ${c.cidade}${c.estado?' - '+c.estado:''}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></div>`).join('');
 }
 async function delCliente(id){
@@ -974,7 +979,7 @@ async function salvarProduto(){
 function renderProdutos(filter=''){
   const list=filter?db.produtos.filter(p=>p.nome.toLowerCase().includes(filter.toLowerCase())):db.produtos;
   const empty='<div class="empty-state"><div class="empty-icon">📦</div>Nenhum produto</div>';
-  document.getElementById('tbody-produtos').innerHTML=!list.length?`<tr><td colspan="4">${empty}</td></tr>`:list.map(p=>`<tr><td><b>${p.nome}</b><br><span style="color:var(--text-soft);font-size:11px">${p.cat||''}</span></td><td>${p.unidade}</td><td style="color:var(--green);font-weight:700">${fmtMoney(p.preco)}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openProdutoModal('${p.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delProduto('${p.id}')">🗑</button></div></td></tr>`).join('');
+  document.getElementById('tbody-produtos').innerHTML=!list.length?`<tr><td colspan="4">${empty}</td></tr>`:list.map(p=>`<tr><td><b>${p.nome}</b><br><span style="color:#8ab0c8;font-size:11px">${p.cat||''}</span></td><td>${p.unidade}</td><td style="color:var(--green);font-weight:700">${fmtMoney(p.preco)}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openProdutoModal('${p.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delProduto('${p.id}')">🗑</button></div></td></tr>`).join('');
   document.getElementById('cards-produtos').innerHTML=!list.length?empty:list.map(p=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${p.nome}</span><span class="row-card-value">${fmtMoney(p.preco)}</span></div><div class="row-card-meta">${p.cat?`<span>🏷 ${p.cat}</span>`:''}<span>📐 ${p.unidade}</span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="openProdutoModal('${p.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delProduto('${p.id}')">🗑</button></div></div>`).join('');
 }
 async function delProduto(id){
@@ -1076,7 +1081,7 @@ function renderOrcamentos(){
   const empty='<div class="empty-state"><div class="empty-icon">📋</div>Nenhum orçamento</div>';
   const isCliente=currentUser&&currentUser.role==='cliente';
   const adminActions=`<select class="btn btn-outline btn-sm" onchange="updOrcStatus('ROID',this.value)" style="padding:5px;font-size:10px"><option value="">▼</option><option>Pendente</option><option>Aprovado</option><option>Recusado</option></select><button class="btn btn-red btn-sm" onclick="delDoc('orcamento','ROID')">🗑</button>`;
-  document.getElementById('tbody-orcamentos').innerHTML=!list.length?`<tr><td colspan="5">${empty}</td></tr>`:list.map(o=>`<tr><td><b>${o.numero}</b><br><span style="color:var(--text-soft);font-size:11px">${fmtDate(o.data)}</span></td><td>${o.clienteNome}</td><td style="color:var(--orange-h);font-weight:700">${fmtMoney(o.total)}</td><td><span class="badge ${o.status==='Aprovado'?'badge-green':o.status==='Recusado'?'badge-red':'badge-amber'}">${o.status}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewDoc('orcamento','${o.id}')">👁</button>${isCliente?'':adminActions.replace(/ROID/g,o.id)}</div></td></tr>`).join('');
+  document.getElementById('tbody-orcamentos').innerHTML=!list.length?`<tr><td colspan="5">${empty}</td></tr>`:list.map(o=>`<tr><td><b>${o.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(o.data)}</span></td><td>${o.clienteNome}</td><td style="color:var(--orange-h);font-weight:700">${fmtMoney(o.total)}</td><td><span class="badge ${o.status==='Aprovado'?'badge-green':o.status==='Recusado'?'badge-red':'badge-amber'}">${o.status}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewDoc('orcamento','${o.id}')">👁</button>${isCliente?'':adminActions.replace(/ROID/g,o.id)}</div></td></tr>`).join('');
   document.getElementById('cards-orcamentos').innerHTML=!list.length?empty:list.map(o=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${o.numero}</span><span class="row-card-value" style="color:var(--orange-h)">${fmtMoney(o.total)}</span></div><div class="row-card-meta"><span>👤 ${o.clienteNome}</span><span>📅 ${fmtDate(o.data)}</span><span><span class="badge ${o.status==='Aprovado'?'badge-green':o.status==='Recusado'?'badge-red':'badge-amber'}">${o.status}</span></span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewDoc('orcamento','${o.id}')">👁 Ver</button>${isCliente?'':`<select class="btn btn-outline btn-sm" onchange="updOrcStatus('${o.id}',this.value)" style="padding:6px;font-size:11px"><option value="">Status...</option><option>Pendente</option><option>Aprovado</option><option>Recusado</option></select><button class="btn btn-red btn-sm" onclick="delDoc('orcamento','${o.id}')">🗑</button>`}</div></div>`).join('');
 }
 async function updOrcStatus(id,status){
@@ -1094,7 +1099,7 @@ function renderRecibos(){
   }
   const empty='<div class="empty-state"><div class="empty-icon">🧾</div>Nenhum recibo</div>';
   const isClienteR=currentUser&&currentUser.role==='cliente';
-  document.getElementById('tbody-recibos').innerHTML=!list.length?`<tr><td colspan="5">${empty}</td></tr>`:list.map(r=>`<tr><td><b>${r.numero}</b><br><span style="color:var(--text-soft);font-size:11px">${fmtDate(r.data)}</span></td><td>${r.clienteNome}</td><td><span class="badge badge-blue">${r.pagamento}</span></td><td style="color:var(--green);font-weight:700">${fmtMoney(r.total)}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewDoc('recibo','${r.id}')">👁</button>${isClienteR?'':`<button class="btn btn-red btn-sm" onclick="delDoc('recibo','${r.id}')">🗑</button>`}</div></td></tr>`).join('');
+  document.getElementById('tbody-recibos').innerHTML=!list.length?`<tr><td colspan="5">${empty}</td></tr>`:list.map(r=>`<tr><td><b>${r.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(r.data)}</span></td><td>${r.clienteNome}</td><td><span class="badge badge-blue">${r.pagamento}</span></td><td style="color:var(--green);font-weight:700">${fmtMoney(r.total)}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewDoc('recibo','${r.id}')">👁</button>${isClienteR?'':`<button class="btn btn-red btn-sm" onclick="delDoc('recibo','${r.id}')">🗑</button>`}</div></td></tr>`).join('');
   document.getElementById('cards-recibos').innerHTML=!list.length?empty:list.map(r=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${r.numero}</span><span class="row-card-value">${fmtMoney(r.total)}</span></div><div class="row-card-meta"><span>👤 ${r.clienteNome}</span><span>📅 ${fmtDate(r.data)}</span><span><span class="badge badge-blue">${r.pagamento}</span></span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewDoc('recibo','${r.id}')">👁 Ver</button>${isClienteR?'':`<button class="btn btn-red btn-sm" onclick="delDoc('recibo','${r.id}')">🗑</button>`}</div></div>`).join('');
 }
 async function delDoc(type,id){
@@ -1143,7 +1148,14 @@ function buildPDF(doc,type){
 function downloadPDF(){
   const doc=viewingDoc;if(!doc)return;
   showToast('Gerando PDF...');
-  html2pdf().set({margin:10,filename:doc.numero+'.pdf',image:{type:'jpeg',quality:.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('pdf-printable')).save().then(()=>showToast('PDF baixado!'));
+  html2pdf().set({
+    margin: [8,6,8,6],
+    filename: doc.numero+'.pdf',
+    image: { type:'jpeg', quality:.97 },
+    html2canvas: { scale:2, useCORS:true, logging:false, scrollY:0 },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
+    pagebreak: { mode:['avoid-all','css','legacy'] }
+  }).from(document.getElementById('pdf-printable')).save().then(()=>showToast('PDF baixado!'));
 }
 function enviarWhatsApp(){
   const doc=viewingDoc;if(!doc)return;
