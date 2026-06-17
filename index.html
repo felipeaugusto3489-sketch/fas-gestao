@@ -57,51 +57,89 @@ button {
 
 <script>
 
-// 🔥 URL FIXA DO WORKER
+// =============================
+// 🔥 CONFIG
+// =============================
 const API_URL = "https://fas-proxy.felipeaugusto3489.workers.dev/";
 
-// 🔐 LOGIN
+
+// =============================
+// 🚀 REQUEST BASE (CORRIGIDO)
+// =============================
+async function apiRequest(method, body = null) {
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    try {
+        const res = await fetch(API_URL + "?t=" + Date.now(), {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: body ? JSON.stringify(body) : null,
+            cache: "no-store",
+            signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+
+        if (!res.ok) throw new Error("Erro HTTP");
+
+        return await res.json();
+
+    } catch (err) {
+        throw err;
+    }
+}
+
+
+// =============================
+// 🔐 LOGIN (CORRIGIDO)
+// =============================
 async function login() {
+
     const usuario = document.getElementById("usuario").value;
     const senha = document.getElementById("senha").value;
 
     try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "login",
-                usuario,
-                senha
-            }),
-            cache: "no-store"
+
+        const data = await apiRequest("POST", {
+            action: "login",
+            usuario,
+            senha
         });
 
-        const data = await res.json();
-
         if (data.status === "ok") {
+
+            // login persistente
+            localStorage.setItem("auth", "true");
+
             alert("Login realizado com sucesso!");
+
         } else {
             alert("Usuário ou senha inválidos");
         }
 
     } catch (err) {
-        alert("Erro de conexão");
+        alert("Erro de conexão com o servidor");
         console.error(err);
     }
 }
 
 
-// 🚀 BOTÃO TESTAR CONEXÃO (VERSÃO BLINDADA MOBILE)
+// =============================
+// 🔄 TESTAR CONEXÃO (MOBILE FIX)
+// =============================
 async function testarConexao() {
+
     const status = document.getElementById("status");
 
     status.innerHTML = "🔄 Testando conexão...";
     status.style.color = "white";
 
     try {
+
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -113,22 +151,31 @@ async function testarConexao() {
 
         clearTimeout(timeout);
 
-        if (!res.ok) {
-            throw new Error("Resposta inválida");
-        }
-
-        const text = await res.text();
+        if (!res.ok) throw new Error();
 
         status.innerHTML = "✅ Conectado com sucesso!";
         status.style.color = "#22c55e";
 
     } catch (err) {
+
         status.innerHTML = "❌ Erro de conexão";
         status.style.color = "#ef4444";
 
-        console.error("Erro:", err);
+        console.error(err);
     }
 }
+
+
+// =============================
+// 🔁 AUTO LOGIN (SEM MEXER UI)
+// =============================
+window.onload = () => {
+
+    if (localStorage.getItem("auth") === "true") {
+        console.log("Usuário já logado");
+    }
+
+};
 
 </script>
 
