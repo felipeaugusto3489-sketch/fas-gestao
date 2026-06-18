@@ -597,7 +597,7 @@
 // ═══════════════════════════════════════════════════════
 // CONFIGURAÇÃO — cole sua URL do Apps Script aqui:
 // ═══════════════════════════════════════════════════════
-const API_URL_PADRAO = 'https://fas-proxy.felipeaugusto3489.workers.dev';
+const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5G5TgBGAtp4oDevs0EkNA8wq52MlUJMde3zviCUo1y8COysISBqu2wfnaPYH3cdG1/exec';
 let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 
 // ═══════════════════════════════════════════════════════
@@ -1147,95 +1147,105 @@ function editarOrcamento(){
   renderDocItems();
   openModal('modal-doc');
 }
-  const isOrc=type==='orcamento';
-  const cl=db.clientes.find(x=>x.id===doc.clienteId)||{};
-  const items=(Array.isArray(doc.items)?doc.items:parseItems(doc.items)).map(item=>({
-    ...item,
-    preco: parseFloat(item.preco||0),
-    qtd:   parseFloat(item.qtd||1),
-    sub:   item.sub!==undefined ? parseFloat(item.sub) : parseFloat(item.qtd||1)*parseFloat(item.preco||0)
-  }));
-  const logoData=localStorage.getItem('fas_logo')||'';
-  const assinData=localStorage.getItem('fas_assinatura')||'';
-  const logoHtml=logoData
-    ?`<img src="${logoData}" style="max-height:55px;max-width:180px;object-fit:contain;display:block;">`
-    :`<div style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>`;
-  const assinHtml=assinData?`<div><img src="${assinData}" style="max-height:50px;max-width:160px;object-fit:contain;display:block;margin:0 auto 2px;"></div>`:'';
-  const footerLogo=logoData
-    ?`<img src="${logoData}" style="height:18px;object-fit:contain;">`
-    :`<span style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança</span>`;
+function buildPDF(doc,type){
+  var isOrc=type==='orcamento';
+  var cl=db.clientes.find(function(x){return x.id===doc.clienteId;})||{};
+  var rawItems=Array.isArray(doc.items)?doc.items:parseItems(doc.items);
+  var items=rawItems.map(function(item){
+    var p=parseFloat(item.preco||0), q=parseFloat(item.qtd||1);
+    return {desc:item.desc||'', qtd:q, preco:p, unidade:item.unidade||'un',
+            sub:item.sub!==undefined?parseFloat(item.sub):q*p};
+  });
+  var logoData=localStorage.getItem('fas_logo')||'';
+  var assinData=localStorage.getItem('fas_assinatura')||'';
+  var logoHtml=logoData
+    ?'<img src="'+logoData+'" style="max-height:55px;max-width:180px;object-fit:contain;display:block;">'
+    :'<div style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>';
+  var assinHtml=assinData
+    ?'<div><img src="'+assinData+'" style="max-height:50px;max-width:160px;object-fit:contain;display:block;margin:0 auto 2px;"></div>'
+    :'';
+  var footerLogo=logoData
+    ?'<img src="'+logoData+'" style="height:18px;object-fit:contain;">'
+    :'<span style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança</span>';
 
-  const itemRows = items.length > 0
-    ? items.map(item=>`<tr>
-        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;word-break:break-word;">${item.desc||'—'}</td>
-        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:center;white-space:nowrap;">${item.qtd}</td>
-        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:center;white-space:nowrap;">${item.unidade||'un'}</td>
-        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:right;white-space:nowrap;">${fmtMoney(item.preco)}</td>
-        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:right;white-space:nowrap;"><b>${fmtMoney(item.sub)}</b></td>
-      </tr>`).join('')
-    : `<tr><td colspan="5" style="padding:12px 8px;font-size:11px;color:#9ca3af;text-align:center;">Nenhum item</td></tr>`;
+  var itemRows='';
+  if(items.length>0){
+    items.forEach(function(item){
+      var even=items.indexOf(item)%2===0;
+      itemRows+='<tr style="background:'+(even?'#fff':'#fafbfc')+';">'
+        +'<td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;word-break:break-word;">'+item.desc+'</td>'
+        +'<td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:center;">'+item.qtd+'</td>'
+        +'<td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:center;">'+item.unidade+'</td>'
+        +'<td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:right;white-space:nowrap;">'+fmtMoney(item.preco)+'</td>'
+        +'<td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:right;white-space:nowrap;"><b>'+fmtMoney(item.sub)+'</b></td>'
+        +'</tr>';
+    });
+  } else {
+    itemRows='<tr><td colspan="5" style="padding:12px 8px;font-size:11px;color:#9ca3af;text-align:center;">Nenhum item</td></tr>';
+  }
 
-  return `<div class="pdf-doc" id="pdf-printable" style="background:#fff;color:#111;font-family:Arial,sans-serif;padding:20px;width:100%;max-width:740px;box-sizing:border-box;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #0E2432;gap:10px;">
-      <div style="flex:1;">${logoHtml}
-        ${cfg.endereco?`<div style="font-size:10px;color:#374151;margin-top:4px;">📍 ${cfg.endereco}</div>`:''}
-        ${cfg.tel?`<div style="font-size:10px;color:#374151;">📞 ${cfg.tel}</div>`:''}
-        ${cfg.email?`<div style="font-size:10px;color:#374151;">✉ ${cfg.email}</div>`:''}
-        ${cfg.cnpj?`<div style="font-size:10px;color:#374151;">CNPJ: ${cfg.cnpj}</div>`:''}
-      </div>
-      <div style="background:#0E2432;color:#fff;padding:8px 12px;border-radius:7px;text-align:center;flex-shrink:0;">
-        <div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:11px;letter-spacing:.05em;">${isOrc?'ORÇAMENTO':'RECIBO DE PAGAMENTO'}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;">Nº ${doc.numero}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">Data: ${fmtDate(doc.data)}</div>
-      </div>
-    </div>
-    <div style="margin-bottom:14px;">
-      <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;font-family:Montserrat,sans-serif;">CLIENTE</div>
-      <div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">
-        <div style="font-size:13px;font-weight:700;color:#0E2432;font-family:Montserrat,sans-serif;">${doc.clienteNome}</div>
-        ${cl.doc?`<div style="font-size:11px;color:#374151;margin-top:2px;">CPF/CNPJ: ${cl.doc}</div>`:''}
-        ${cl.tel?`<div style="font-size:11px;color:#374151;">Tel: ${cl.tel}</div>`:''}
-        ${cl.email?`<div style="font-size:11px;color:#374151;">Email: ${cl.email}</div>`:''}
-        ${cl.endereco?`<div style="font-size:11px;color:#374151;">📍 ${cl.endereco}${cl.cidade?' - '+cl.cidade:''}${cl.estado?'/'+cl.estado:''}</div>`:''}
-      </div>
-    </div>
-    <div style="margin-bottom:12px;">
-      <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;font-family:Montserrat,sans-serif;">${isOrc?'ITENS DO ORÇAMENTO':'ITENS'}</div>
-      <table style="width:100%;border-collapse:collapse;table-layout:auto;">
-        <thead>
-          <tr style="background:#f1f3f5;">
-            <th style="text-align:left;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Descrição</th>
-            <th style="text-align:center;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Qtd</th>
-            <th style="text-align:center;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Un.</th>
-            <th style="text-align:right;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Unitário</th>
-            <th style="text-align:right;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>${itemRows}</tbody>
-      </table>
-    </div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-      <div style="background:#0E2432;color:#fff;border-radius:8px;padding:10px 16px;text-align:right;min-width:160px;">
-        <div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;font-family:Montserrat,sans-serif;">TOTAL${!isOrc?' — PAGO':''}</div>
-        <div style="font-size:18px;font-weight:900;color:#e8500a;font-family:Montserrat,sans-serif;">${fmtMoney(doc.total)}</div>
-        ${!isOrc?`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;">Forma: ${doc.pagamento}</div>`:''}
-      </div>
-    </div>
-    ${isOrc?`<div style="background:#fff8f4;border:1px solid #fbd5c0;border-left:4px solid #e8500a;padding:8px 12px;font-size:11px;color:#7c3100;margin-bottom:10px;">⏳ Válido até <b>${fmtDate(doc.validade)}</b></div>`:''}
-    ${doc.obs?`<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;font-family:Montserrat,sans-serif;">OBSERVAÇÕES</div><div style="font-size:11px;color:#374151;line-height:1.6;padding:8px 12px;background:#f9fafb;border-radius:6px;">${doc.obs}</div></div>`:''}
-    <div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;align-items:flex-end;">
-      ${!isOrc?`<div style="font-size:10px;color:#6b7280;max-width:45%;">Declaro que recebi o valor acima referente aos serviços/produtos listados.</div>`:'<div></div>'}
-      <div style="text-align:center;">
-        ${assinHtml}
-        <div style="border-top:1px solid #374151;padding-top:5px;font-size:10px;color:#6b7280;min-width:160px;">${cfg.nome||'FAS Segurança Eletrônica'}<br>${isOrc?'Responsável':'Assinatura do Responsável'}</div>
-      </div>
-    </div>
-    <div style="margin-top:14px;padding-top:10px;border-top:2px solid #0E2432;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
-      <div>${footerLogo}</div>
-      <div style="font-size:10px;color:#6b7280;text-align:right;">${cfg.rodape||''}</div>
-    </div>
-  </div>`;
+  var h='';
+  h+='<div id="pdf-printable" style="background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:20px;width:100%;max-width:740px;box-sizing:border-box;">';
+  // Header
+  h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #0E2432;gap:10px;">';
+  h+='<div style="flex:1;">'+logoHtml;
+  if(cfg.endereco) h+='<div style="font-size:10px;color:#374151;margin-top:4px;">'+cfg.endereco+'</div>';
+  if(cfg.tel) h+='<div style="font-size:10px;color:#374151;">'+cfg.tel+'</div>';
+  if(cfg.email) h+='<div style="font-size:10px;color:#374151;">'+cfg.email+'</div>';
+  if(cfg.cnpj) h+='<div style="font-size:10px;color:#374151;">CNPJ: '+cfg.cnpj+'</div>';
+  h+='</div>';
+  h+='<div style="background:#0E2432;color:#fff;padding:8px 12px;border-radius:7px;text-align:center;flex-shrink:0;">';
+  h+='<div style="font-weight:800;font-size:11px;letter-spacing:.05em;">'+(isOrc?'ORÇAMENTO':'RECIBO DE PAGAMENTO')+'</div>';
+  h+='<div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;">N° '+doc.numero+'</div>';
+  h+='<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">Data: '+fmtDate(doc.data)+'</div>';
+  h+='</div></div>';
+  // Cliente
+  h+='<div style="margin-bottom:14px;">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
+  h+='<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
+  h+='<div style="font-size:13px;font-weight:700;color:#0E2432;">'+doc.clienteNome+'</div>';
+  if(cl.doc) h+='<div style="font-size:11px;color:#374151;margin-top:2px;">CPF/CNPJ: '+cl.doc+'</div>';
+  if(cl.tel) h+='<div style="font-size:11px;color:#374151;">Tel: '+cl.tel+'</div>';
+  if(cl.email) h+='<div style="font-size:11px;color:#374151;">Email: '+cl.email+'</div>';
+  if(cl.endereco) h+='<div style="font-size:11px;color:#374151;">'+cl.endereco+(cl.cidade?' - '+cl.cidade:'')+(cl.estado?'/'+cl.estado:'')+'</div>';
+  h+='</div></div>';
+  // Itens
+  h+='<div style="margin-bottom:12px;">';
+  h+='<div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">'+(isOrc?'ITENS DO ORÇAMENTO':'ITENS')+'</div>';
+  h+='<table style="width:100%;border-collapse:collapse;">';
+  h+='<thead><tr style="background:#f1f3f5;">';
+  h+='<th style="text-align:left;font-size:9px;font-weight:800;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Descrição</th>';
+  h+='<th style="text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Qtd</th>';
+  h+='<th style="text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Un.</th>';
+  h+='<th style="text-align:right;font-size:9px;font-weight:800;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Unitário</th>';
+  h+='<th style="text-align:right;font-size:9px;font-weight:800;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Subtotal</th>';
+  h+='</tr></thead><tbody>'+itemRows+'</tbody></table></div>';
+  // Total
+  h+='<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">';
+  h+='<div style="background:#0E2432;color:#fff;border-radius:8px;padding:10px 16px;text-align:right;min-width:160px;">';
+  h+='<div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;">TOTAL'+(isOrc?'':' — PAGO')+'</div>';
+  h+='<div style="font-size:18px;font-weight:900;color:#e8500a;">'+fmtMoney(doc.total)+'</div>';
+  if(!isOrc) h+='<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;">Forma: '+doc.pagamento+'</div>';
+  h+='</div></div>';
+  // Validade
+  if(isOrc) h+='<div style="background:#fff8f4;border:1px solid #fbd5c0;border-left:4px solid #e8500a;padding:8px 12px;font-size:11px;color:#7c3100;margin-bottom:10px;">⏳ Válido até <b>'+fmtDate(doc.validade)+'</b></div>';
+  // Obs
+  if(doc.obs) h+='<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">OBSERVAÇÕES</div><div style="font-size:11px;color:#374151;line-height:1.6;padding:8px 12px;background:#f9fafb;border-radius:6px;">'+doc.obs+'</div></div>';
+  // Assinatura
+  h+='<div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;align-items:flex-end;">';
+  h+=isOrc?'<div></div>':'<div style="font-size:10px;color:#6b7280;max-width:45%;">Declaro que recebi o valor acima referente aos serviços/produtos listados.</div>';
+  h+='<div style="text-align:center;">'+assinHtml;
+  h+='<div style="border-top:1px solid #374151;padding-top:5px;font-size:10px;color:#6b7280;min-width:160px;">'+(cfg.nome||'FAS Segurança Eletrônica')+'<br>'+(isOrc?'Responsável':'Assinatura do Responsável')+'</div>';
+  h+='</div></div>';
+  // Rodapé
+  h+='<div style="margin-top:14px;padding-top:10px;border-top:2px solid #0E2432;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">';
+  h+='<div>'+footerLogo+'</div>';
+  h+='<div style="font-size:10px;color:#6b7280;text-align:right;">'+(cfg.rodape||'')+'</div>';
+  h+='</div>';
+  h+='</div>';
+  return h;
 }
+
 function downloadPDF(){
   const doc=viewingDoc; if(!doc) return;
   showToast('Gerando PDF...');
