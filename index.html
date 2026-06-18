@@ -578,6 +578,7 @@
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap;">
       <button class="btn btn-outline btn-sm" onclick="closeModal('modal-view')" style="padding:6px 10px;flex-shrink:0;">✕ Fechar</button>
       <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--white);flex:1;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="modal-view-title">Visualizar</div>
+      <button class="btn btn-outline btn-sm" id="btn-editar-doc" onclick="editarOrcamento()" title="Editar Orçamento" style="flex-shrink:0;padding:6px 10px;color:var(--amber);border-color:rgba(245,166,35,.4);">✏️</button>
       <button class="btn btn-primary btn-sm" onclick="downloadPDF()" title="Baixar PDF" style="flex-shrink:0;">⬇ PDF</button>
       <button class="btn btn-whatsapp btn-sm" onclick="enviarWhatsApp()" title="WhatsApp" style="flex-shrink:0;padding:6px 10px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
@@ -1034,21 +1035,29 @@ async function salvarDocumento(){
   const data=document.getElementById('doc-data').value;
   const items=docItems.map(item=>{const prod=item.produtoId?db.produtos.find(p=>p.id===item.produtoId):null;return{desc:item.custom?item.desc:(prod?prod.nome:item.desc),qtd:item.qtd,preco:item.preco,unidade:prod?prod.unidade:'un',sub:item.qtd*item.preco};}).filter(x=>x.preco>0);
   const isOrc=docType==='orcamento';
+  const isEditing = !!editingId;
+  const existingDoc = isEditing && isOrc ? db.orcamentos.find(x=>x.id===editingId) : null;
   const doc={
-    id:genId(),
-    numero:genNum(isOrc?cfg.prefixOrc:cfg.prefixRec, isOrc?db.orcamentos:db.recibos),
+    id: isEditing ? editingId : genId(),
+    numero: isEditing && existingDoc ? existingDoc.numero : genNum(isOrc?cfg.prefixOrc:cfg.prefixRec, isOrc?db.orcamentos:db.recibos),
     clienteId,clienteNome:cliente.nome,clienteTel:cliente.tel||'',
     data, items, total:getTotal(), obs:document.getElementById('doc-obs').value,
-    ...(isOrc?{validade:addDays(data,parseInt(document.getElementById('doc-validade').value)||30),status:'Pendente'}:{pagamento:document.getElementById('doc-pagamento').value})
+    ...(isOrc?{validade:addDays(data,parseInt(document.getElementById('doc-validade').value)||30),status:existingDoc?existingDoc.status:'Pendente'}:{pagamento:document.getElementById('doc-pagamento').value})
   };
   closeModal('modal-doc');
-  showLoading('Salvando documento...');
+  showLoading(isEditing?'Atualizando documento...':'Salvando documento...');
   try {
     const sheet=isOrc?'Orcamentos':'Recibos';
     if(API_URL) await apiSave(sheet, doc);
-    if(isOrc) db.orcamentos.push(doc); else db.recibos.push(doc);
+    if(isOrc){
+      if(isEditing){ const i=db.orcamentos.findIndex(x=>x.id===editingId); if(i>=0) db.orcamentos[i]=doc; else db.orcamentos.push(doc); }
+      else db.orcamentos.push(doc);
+    } else {
+      db.recibos.push(doc);
+    }
+    editingId = null;
     saveLocalCache();renderOrcamentos();renderRecibos();updateBadges();updateDashboard();
-    showToast((isOrc?'Orçamento ':'Recibo ')+doc.numero+' gerado!');
+    showToast((isEditing?'Orçamento atualizado: ':'Orçamento gerado: ')+doc.numero);
   } catch(e){showToast('Erro: '+e.message);} finally{hideLoading();}
 }
 
@@ -1090,70 +1099,166 @@ async function delDoc(type,id){
 // ═══════════════════════════════════════════════════════
 // PDF
 // ═══════════════════════════════════════════════════════
+function parseItems(raw){
+  if(Array.isArray(raw)) return raw;
+  if(typeof raw==='string' && raw.trim().startsWith('[')){
+    try{ return JSON.parse(raw); }catch(e){}
+  }
+  return [];
+}
+
 function viewDoc(type,id){
   const doc=type==='orcamento'?db.orcamentos.find(x=>x.id===id):db.recibos.find(x=>x.id===id);
   if(!doc)return;
-  viewingDoc={...doc,type};
+  const parsed = parseItems(doc.items);
+  viewingDoc={...doc, items: parsed, type};
   document.getElementById('modal-view-title').textContent=(type==='orcamento'?'📋 ':'🧾 ')+doc.numero;
-  document.getElementById('pdf-content').innerHTML=buildPDF(doc,type);
+  document.getElementById('pdf-content').innerHTML=buildPDF(viewingDoc,type);
+  // Show/hide edit button
+  const editBtn = document.getElementById('btn-editar-doc');
+  if(editBtn) editBtn.style.display = type==='orcamento' ? '' : 'none';
   openModal('modal-view');
 }
-function buildPDF(doc,type){
+function editarOrcamento(){
+  const doc = viewingDoc;
+  if(!doc || doc.type !== 'orcamento') return;
+  closeModal('modal-view');
+  // Populate modal-doc with existing data
+  docType = 'orcamento';
+  docItems = parseItems(doc.items).map(item=>({
+    id: item.id || genId(),
+    produtoId: item.produtoId || '',
+    desc: item.desc || '',
+    qtd: parseFloat(item.qtd||1),
+    preco: parseFloat(item.preco||0),
+    custom: !item.produtoId,
+  }));
+  if(docItems.length === 0) docItems = [{id:genId(),produtoId:'',desc:'',qtd:1,preco:0}];
+  // Set editingId so salvarDocumento updates instead of inserting
+  editingId = doc.id;
+  document.getElementById('modal-doc-title').textContent = 'Editar Orçamento — ' + doc.numero;
+  document.getElementById('doc-data').value = doc.data ? String(doc.data).split('T')[0] : today();
+  document.getElementById('doc-validade').value = cfg.validade;
+  document.getElementById('doc-obs').value = doc.obs || '';
+  document.getElementById('doc-validade-group').style.display = '';
+  document.getElementById('doc-pagamento-group').style.display = 'none';
+  const sel = document.getElementById('doc-cliente');
+  sel.innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${c.id===doc.clienteId?'selected':''}>${c.nome}</option>`).join('');
+  renderDocItems();
+  openModal('modal-doc');
+}
   const isOrc=type==='orcamento';
   const cl=db.clientes.find(x=>x.id===doc.clienteId)||{};
-  let items=[];
-  if(Array.isArray(doc.items)){
-    items=doc.items;
-  } else if(typeof doc.items==='string' && doc.items.trim().startsWith('[')){
-    try{ items=JSON.parse(doc.items); }catch(e){ items=[]; }
-  }
-  // Garantir que sub existe em todos os itens
-  items = items.map(item=>({
+  const items=(Array.isArray(doc.items)?doc.items:parseItems(doc.items)).map(item=>({
     ...item,
-    sub: item.sub !== undefined ? item.sub : (parseFloat(item.qtd||1) * parseFloat(item.preco||0))
+    preco: parseFloat(item.preco||0),
+    qtd:   parseFloat(item.qtd||1),
+    sub:   item.sub!==undefined ? parseFloat(item.sub) : parseFloat(item.qtd||1)*parseFloat(item.preco||0)
   }));
   const logoData=localStorage.getItem('fas_logo')||'';
   const assinData=localStorage.getItem('fas_assinatura')||'';
-  const logoHtml=logoData?`<img src="${logoData}" style="max-height:60px;max-width:190px;object-fit:contain;display:block;">`:`<div style="font-family:Montserrat,sans-serif;font-size:17px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>`;
-  const assinHtml=assinData?`<div><img src="${assinData}" style="max-height:54px;max-width:170px;object-fit:contain;display:block;margin:0 auto 2px;"></div>`:'';
-  const footerLogo=logoData?`<img src="${logoData}" style="height:20px;object-fit:contain;">`:`<span style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança</span>`;
-  return `<div class="pdf-doc" id="pdf-printable">
-    <div class="pdf-header">
-      <div>${logoHtml}${cfg.cnpj?`<div class="pdf-brand-sub" style="margin-top:5px">CNPJ: ${cfg.cnpj}</div>`:""}${cfg.endereco?`<div class="pdf-brand-sub">📍 ${cfg.endereco}</div>`:""}${cfg.tel?`<div class="pdf-brand-sub">📞 ${cfg.tel}</div>`:""}${cfg.email?`<div class="pdf-brand-sub">✉ ${cfg.email}</div>`:""}</div>
-      <div class="pdf-doc-badge"><div class="pdf-doc-type">${isOrc?"ORÇAMENTO":"RECIBO DE PAGAMENTO"}</div><div class="pdf-doc-num">Nº ${doc.numero}</div><div class="pdf-doc-date">Data: ${fmtDate(doc.data)}</div></div>
+  const logoHtml=logoData
+    ?`<img src="${logoData}" style="max-height:55px;max-width:180px;object-fit:contain;display:block;">`
+    :`<div style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>`;
+  const assinHtml=assinData?`<div><img src="${assinData}" style="max-height:50px;max-width:160px;object-fit:contain;display:block;margin:0 auto 2px;"></div>`:'';
+  const footerLogo=logoData
+    ?`<img src="${logoData}" style="height:18px;object-fit:contain;">`
+    :`<span style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança</span>`;
+
+  const itemRows = items.length > 0
+    ? items.map(item=>`<tr>
+        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;word-break:break-word;">${item.desc||'—'}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:center;white-space:nowrap;">${item.qtd}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:center;white-space:nowrap;">${item.unidade||'un'}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:right;white-space:nowrap;">${fmtMoney(item.preco)}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#111;text-align:right;white-space:nowrap;"><b>${fmtMoney(item.sub)}</b></td>
+      </tr>`).join('')
+    : `<tr><td colspan="5" style="padding:12px 8px;font-size:11px;color:#9ca3af;text-align:center;">Nenhum item</td></tr>`;
+
+  return `<div class="pdf-doc" id="pdf-printable" style="background:#fff;color:#111;font-family:Arial,sans-serif;padding:20px;width:100%;max-width:740px;box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #0E2432;gap:10px;">
+      <div style="flex:1;">${logoHtml}
+        ${cfg.endereco?`<div style="font-size:10px;color:#374151;margin-top:4px;">📍 ${cfg.endereco}</div>`:''}
+        ${cfg.tel?`<div style="font-size:10px;color:#374151;">📞 ${cfg.tel}</div>`:''}
+        ${cfg.email?`<div style="font-size:10px;color:#374151;">✉ ${cfg.email}</div>`:''}
+        ${cfg.cnpj?`<div style="font-size:10px;color:#374151;">CNPJ: ${cfg.cnpj}</div>`:''}
+      </div>
+      <div style="background:#0E2432;color:#fff;padding:8px 12px;border-radius:7px;text-align:center;flex-shrink:0;">
+        <div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:11px;letter-spacing:.05em;">${isOrc?'ORÇAMENTO':'RECIBO DE PAGAMENTO'}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;">Nº ${doc.numero}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">Data: ${fmtDate(doc.data)}</div>
+      </div>
     </div>
-    <div class="pdf-section"><div class="pdf-section-title">Cliente</div><div class="pdf-client-box"><div class="pdf-client-name">${doc.clienteNome}</div>${cl.doc?`<div class="pdf-client-info">CPF/CNPJ: ${cl.doc}</div>`:""}${cl.tel?`<div class="pdf-client-info">Tel: ${cl.tel}</div>`:""}${cl.email?`<div class="pdf-client-info">Email: ${cl.email}</div>`:""}${cl.endereco?`<div class="pdf-client-info">📍 ${cl.endereco}${cl.cidade?" - "+cl.cidade:""}${cl.estado?"/"+cl.estado:""}</div>`:""}</div></div>
-    <div class="pdf-section"><div class="pdf-section-title">${isOrc?"Itens do Orçamento":"Itens"}</div><table class="pdf-table"><thead><tr><th>Descrição</th><th>Qtd</th><th>Un.</th><th>Unitário</th><th>Subtotal</th></tr></thead><tbody>${items.map(item=>`<tr><td>${item.desc}</td><td>${item.qtd}</td><td>${item.unidade||"un"}</td><td>${fmtMoney(item.preco)}</td><td><b>${fmtMoney(item.sub)}</b></td></tr>`).join("")}</tbody></table></div>
-    <div class="pdf-total-row"><div class="pdf-total-box"><div class="pdf-total-label">TOTAL${!isOrc?" — PAGO":""}</div><div class="pdf-total-value">${fmtMoney(doc.total)}</div>${!isOrc?`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">Forma: ${doc.pagamento}</div>`:""}</div></div>
-    ${isOrc?`<div class="pdf-validity">⏳ Válido até <b>${fmtDate(doc.validade)}</b></div>`:""}
-    ${doc.obs?`<div class="pdf-section" style="margin-top:14px"><div class="pdf-section-title">Observações</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 13px;background:#f9fafb;border-radius:8px">${doc.obs}</div></div>`:""}
-    <div style="margin-top:28px;border-top:1px solid #e5e7eb;padding-top:14px;display:flex;justify-content:space-between;align-items:flex-end;">
-      ${!isOrc?`<div style="font-size:11px;color:#6b7280;max-width:48%">Declaro que recebi o valor acima referente aos serviços/produtos listados.</div>`:"<div></div>"}
-      <div style="text-align:center;">${assinHtml}<div style="border-top:1px solid #374151;padding-top:5px;font-size:11px;color:#6b7280;min-width:180px;">${cfg.nome||"FAS Segurança Eletrônica"}<br>${isOrc?"Responsável":"Assinatura do Responsável"}</div></div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;font-family:Montserrat,sans-serif;">CLIENTE</div>
+      <div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">
+        <div style="font-size:13px;font-weight:700;color:#0E2432;font-family:Montserrat,sans-serif;">${doc.clienteNome}</div>
+        ${cl.doc?`<div style="font-size:11px;color:#374151;margin-top:2px;">CPF/CNPJ: ${cl.doc}</div>`:''}
+        ${cl.tel?`<div style="font-size:11px;color:#374151;">Tel: ${cl.tel}</div>`:''}
+        ${cl.email?`<div style="font-size:11px;color:#374151;">Email: ${cl.email}</div>`:''}
+        ${cl.endereco?`<div style="font-size:11px;color:#374151;">📍 ${cl.endereco}${cl.cidade?' - '+cl.cidade:''}${cl.estado?'/'+cl.estado:''}</div>`:''}
+      </div>
     </div>
-    <div class="pdf-footer"><div class="pdf-footer-logo">${footerLogo}</div><div style="font-size:10px;text-align:right;color:#9ca3af;">${cfg.rodape}</div></div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;font-family:Montserrat,sans-serif;">${isOrc?'ITENS DO ORÇAMENTO':'ITENS'}</div>
+      <table style="width:100%;border-collapse:collapse;table-layout:auto;">
+        <thead>
+          <tr style="background:#f1f3f5;">
+            <th style="text-align:left;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;">Descrição</th>
+            <th style="text-align:center;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Qtd</th>
+            <th style="text-align:center;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Un.</th>
+            <th style="text-align:right;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Unitário</th>
+            <th style="text-align:right;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#374151;padding:6px 8px;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <div style="background:#0E2432;color:#fff;border-radius:8px;padding:10px 16px;text-align:right;min-width:160px;">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;font-family:Montserrat,sans-serif;">TOTAL${!isOrc?' — PAGO':''}</div>
+        <div style="font-size:18px;font-weight:900;color:#e8500a;font-family:Montserrat,sans-serif;">${fmtMoney(doc.total)}</div>
+        ${!isOrc?`<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;">Forma: ${doc.pagamento}</div>`:''}
+      </div>
+    </div>
+    ${isOrc?`<div style="background:#fff8f4;border:1px solid #fbd5c0;border-left:4px solid #e8500a;padding:8px 12px;font-size:11px;color:#7c3100;margin-bottom:10px;">⏳ Válido até <b>${fmtDate(doc.validade)}</b></div>`:''}
+    ${doc.obs?`<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;font-family:Montserrat,sans-serif;">OBSERVAÇÕES</div><div style="font-size:11px;color:#374151;line-height:1.6;padding:8px 12px;background:#f9fafb;border-radius:6px;">${doc.obs}</div></div>`:''}
+    <div style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;align-items:flex-end;">
+      ${!isOrc?`<div style="font-size:10px;color:#6b7280;max-width:45%;">Declaro que recebi o valor acima referente aos serviços/produtos listados.</div>`:'<div></div>'}
+      <div style="text-align:center;">
+        ${assinHtml}
+        <div style="border-top:1px solid #374151;padding-top:5px;font-size:10px;color:#6b7280;min-width:160px;">${cfg.nome||'FAS Segurança Eletrônica'}<br>${isOrc?'Responsável':'Assinatura do Responsável'}</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding-top:10px;border-top:2px solid #0E2432;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+      <div>${footerLogo}</div>
+      <div style="font-size:10px;color:#6b7280;text-align:right;">${cfg.rodape||''}</div>
+    </div>
   </div>`;
 }
 function downloadPDF(){
   const doc=viewingDoc; if(!doc) return;
   showToast('Gerando PDF...');
   const el = document.getElementById('pdf-printable');
-  const opt = {
-    margin: 10,
+  // Temporarily set width to A4 for capture
+  const prevWidth = el.style.width;
+  el.style.width = '740px';
+  html2pdf().set({
+    margin: [10, 10, 10, 10],
     filename: doc.numero + '.pdf',
-    image: { type: 'jpeg', quality: 0.97 },
+    image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 2,
       useCORS: true,
       logging: false,
       scrollY: 0,
       scrollX: 0,
-      windowWidth: 794,
-      windowHeight: 1123,
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-  };
-  html2pdf().set(opt).from(el).save().then(()=>showToast('PDF baixado!'));
+  }).from(el).save().then(()=>{
+    el.style.width = prevWidth;
+    showToast('PDF baixado!');
+  }).catch(()=>{ el.style.width = prevWidth; });
 }
 function enviarWhatsApp(){
   const doc=viewingDoc;if(!doc)return;
