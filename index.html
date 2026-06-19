@@ -344,6 +344,14 @@
           <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
           <span class="nav-text">Recibos</span><span class="nav-badge" id="badge-recibos">0</span>
         </div>
+        <div class="nav-item" onclick="showPage('ordens',this)">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h6m-6-4l4 4-4 4M5 7h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg>
+          <span class="nav-text">Ordens de Serviço</span><span class="nav-badge" id="badge-ordens">0</span>
+        </div>
+        <div class="nav-item" onclick="showPage('laudos',this)">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h4m1-13H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h1"/></svg>
+          <span class="nav-text">Laudos Técnicos</span><span class="nav-badge" id="badge-laudos">0</span>
+        </div>
       </div>
       <div class="nav-group">
         <div class="nav-label">Sistema</div>
@@ -424,6 +432,26 @@
       <div class="card">
         <div><table><thead><tr><th>Nº</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th>Ações</th></tr></thead><tbody id="tbody-recibos"><tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🧾</div>Carregando...</div></td></tr></tbody></table></div>
         <div class="row-card" id="cards-recibos"></div>
+      </div>
+    </div>
+
+    <!-- ORDENS DE SERVIÇO -->
+    <div class="page" id="page-ordens">
+      <button class="btn-back" onclick="voltarPagina()">← Voltar</button>
+      <div class="page-header"><div class="page-title">Ordens de Serviço</div><button class="btn btn-primary" id="btn-nova-os" onclick="novaOS()">+ Nova OS</button></div>
+      <div class="card">
+        <div><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbody-ordens"><tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🛠</div>Carregando...</div></td></tr></tbody></table></div>
+        <div class="row-card" id="cards-ordens"></div>
+      </div>
+    </div>
+
+    <!-- LAUDOS TÉCNICOS -->
+    <div class="page" id="page-laudos">
+      <button class="btn-back" onclick="voltarPagina()">← Voltar</button>
+      <div class="page-header"><div class="page-title">Laudos Técnicos</div><button class="btn btn-primary" id="btn-novo-laudo" onclick="novoLaudo()">+ Novo Laudo</button></div>
+      <div class="card">
+        <div><table><thead><tr><th>Nº</th><th>Cliente</th><th>Data</th><th>Conclusão</th><th>Ações</th></tr></thead><tbody id="tbody-laudos"><tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📝</div>Carregando...</div></td></tr></tbody></table></div>
+        <div class="row-card" id="cards-laudos"></div>
       </div>
     </div>
 
@@ -573,6 +601,78 @@
   </div>
 </div>
 
+<!-- Modal Ordem de Serviço -->
+<div class="overlay" id="modal-os">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="modal-os-title">Nova Ordem de Serviço</div><button class="close-btn" onclick="closeModal('modal-os')">✕</button></div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="form-group"><label>Cliente *</label><select id="os-cliente"><option value="">Selecionar...</option></select></div>
+      <div class="form-group"><label>Data</label><input id="os-data" type="date"></div>
+      <div class="form-group"><label>Tipo de Serviço</label>
+        <select id="os-tipo">
+          <option value="Instalação">Instalação</option>
+          <option value="Manutenção">Manutenção</option>
+          <option value="Reparo">Reparo</option>
+          <option value="Configuração">Configuração</option>
+          <option value="Vistoria">Vistoria</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Técnico Responsável</label><input id="os-tecnico" placeholder="Nome do técnico"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="os-status">
+          <option value="Aberta">Aberta</option>
+          <option value="Em Andamento">Em Andamento</option>
+          <option value="Concluída">Concluída</option>
+          <option value="Cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Horário Previsto</label><input id="os-horario" type="time"></div>
+      <div class="form-group full"><label>Endereço do Serviço</label><input id="os-endereco" placeholder="Local onde o serviço será realizado"></div>
+      <div class="form-group full"><label>Descrição do Serviço *</label><textarea id="os-descricao" placeholder="Detalhe o que será executado..."></textarea></div>
+      <div class="form-group full"><label>Materiais Utilizados</label><textarea id="os-materiais" placeholder="Liste os materiais/equipamentos usados..."></textarea></div>
+      <div class="form-group full"><label>Observações</label><textarea id="os-obs" placeholder="Observações gerais..."></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('modal-os')">Cancelar</button><button class="btn btn-primary" onclick="salvarOS()">💾 Salvar OS</button></div>
+  </div>
+</div>
+
+<!-- Modal Laudo Técnico -->
+<div class="overlay" id="modal-laudo">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="modal-laudo-title">Novo Laudo Técnico</div><button class="close-btn" onclick="closeModal('modal-laudo')">✕</button></div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="form-group"><label>Cliente *</label><select id="laudo-cliente"><option value="">Selecionar...</option></select></div>
+      <div class="form-group"><label>Data da Vistoria</label><input id="laudo-data" type="date"></div>
+      <div class="form-group"><label>Técnico Responsável</label><input id="laudo-tecnico" placeholder="Nome do técnico"></div>
+      <div class="form-group"><label>Tipo de Vistoria</label>
+        <select id="laudo-tipo">
+          <option value="Diagnóstico">Diagnóstico</option>
+          <option value="Vistoria Técnica">Vistoria Técnica</option>
+          <option value="Avaliação de Sistema">Avaliação de Sistema</option>
+          <option value="Perícia">Perícia</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Endereço Vistoriado</label><input id="laudo-endereco" placeholder="Local da vistoria"></div>
+      <div class="form-group full"><label>Equipamentos Avaliados</label><textarea id="laudo-equipamentos" placeholder="Liste câmeras, alarmes, cercas, etc. avaliados..."></textarea></div>
+      <div class="form-group full"><label>Constatações Técnicas *</label><textarea id="laudo-constatacoes" placeholder="Descreva o que foi observado tecnicamente..."></textarea></div>
+      <div class="form-group full"><label>Recomendações</label><textarea id="laudo-recomendacoes" placeholder="Sugestões de melhoria, reparo ou substituição..."></textarea></div>
+      <div class="form-group"><label>Conclusão</label>
+        <select id="laudo-conclusao">
+          <option value="Sistema Funcional">Sistema Funcional</option>
+          <option value="Necessita Reparo">Necessita Reparo</option>
+          <option value="Necessita Substituição">Necessita Substituição</option>
+          <option value="Sistema Comprometido">Sistema Comprometido</option>
+          <option value="Aprovado">Aprovado</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Observações Finais</label><textarea id="laudo-obs" placeholder="Observações adicionais..."></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('modal-laudo')">Cancelar</button><button class="btn btn-primary" onclick="salvarLaudo()">💾 Salvar Laudo</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-view">
   <div class="modal modal-lg" style="padding:14px;">
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap;">
@@ -603,7 +703,7 @@ let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 // ═══════════════════════════════════════════════════════
 // STATE LOCAL (cache)
 // ═══════════════════════════════════════════════════════
-let db = { clientes:[], produtos:[], orcamentos:[], recibos:[] };
+let db = { clientes:[], produtos:[], orcamentos:[], recibos:[], ordens:[], laudos:[] };
 let cfg = {
   nome:'FAS Segurança Eletrônica', cnpj:'', tel:'(17) 98100-2178',
   email:'contato@fassegurancaeletronica.com.br',
@@ -663,10 +763,9 @@ async function apiPost(body) {
 }
 
 async function apiSave(sheet, row) {
-  // Serializa items para não estourar URL
-  const rowCopy = Object.assign({}, row);
-  if (Array.isArray(rowCopy.items)) rowCopy.items = JSON.stringify(rowCopy.items);
-  return api({ action:'save', sheet, row: JSON.stringify(rowCopy) });
+  // Mantém items como array dentro do objeto row — será serializado UMA única vez
+  // pela função api() ao montar a query string. Isso evita stringificação dupla.
+  return api({ action:'save', sheet, row: JSON.stringify(row) });
 }
 async function apiDelete(sheet, id) {
   return api({ action:'delete', sheet, id });
@@ -733,14 +832,17 @@ async function syncAll() {
   setSyncStatus('syncing', 'Sincronizando...');
   showLoading('Sincronizando com Google Sheets...');
   try {
-    const [clientes, produtos, orcamentos, recibos] = await Promise.all([
+    const [clientes, produtos, orcamentos, recibos, ordens, laudos] = await Promise.all([
       apiGetAll('Clientes'), apiGetAll('Produtos'),
-      apiGetAll('Orcamentos'), apiGetAll('Recibos')
+      apiGetAll('Orcamentos'), apiGetAll('Recibos'),
+      apiGetAll('Ordens'), apiGetAll('Laudos')
     ]);
     db.clientes   = clientes;
     db.produtos   = produtos;
     db.orcamentos = orcamentos;
     db.recibos    = recibos;
+    db.ordens     = ordens;
+    db.laudos     = laudos;
     saveLocalCache();
     setSyncStatus('ok', 'Conectado ao Google Sheets');
     renderAll();
@@ -785,6 +887,7 @@ async function testarConexao() {
 function renderAll() {
   updateBadges(); updateDashboard();
   renderClientes(); renderProdutos(); renderOrcamentos(); renderRecibos();
+  renderOrdens(); renderLaudos();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -825,6 +928,8 @@ function _goToPage(page,el){
   if(page==='produtos')renderProdutos();
   if(page==='orcamentos')renderOrcamentos();
   if(page==='recibos')renderRecibos();
+  if(page==='ordens')renderOrdens();
+  if(page==='laudos')renderLaudos();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -847,13 +952,15 @@ function today(){return new Date().toISOString().split('T')[0];}
 function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().split('T')[0];}
 function isMobile(){return window.innerWidth<=768;}
 
-function updateBadges(){['clientes','produtos','orcamentos','recibos'].forEach(k=>document.getElementById('badge-'+k).textContent=db[k].length);}
+function updateBadges(){['clientes','produtos','orcamentos','recibos','ordens','laudos'].forEach(k=>{const el=document.getElementById('badge-'+k); if(el) el.textContent=db[k].length;});}
 function updateDashboard(){
   ['clientes','produtos','orcamentos','recibos'].forEach(k=>document.getElementById('stat-'+k).textContent=db[k].length);
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const acts=[];
   [...db.orcamentos.slice(-4).reverse()].forEach(o=>acts.push(`📋 ${o.numero} — ${o.clienteNome} — <b style="color:var(--orange-h)">${fmtMoney(o.total)}</b>`));
   [...db.recibos.slice(-4).reverse()].forEach(r=>acts.push(`🧾 ${r.numero} — ${r.clienteNome} — <b style="color:var(--green)">${fmtMoney(r.total)}</b>`));
+  [...(db.ordens||[]).slice(-3).reverse()].forEach(o=>acts.push(`🛠 ${o.numero} — ${o.clienteNome} — <b style="color:#6fa3ff">${o.status}</b>`));
+  [...(db.laudos||[]).slice(-3).reverse()].forEach(l=>acts.push(`📝 ${l.numero} — ${l.clienteNome} — <b style="color:var(--amber)">${l.conclusao}</b>`));
   document.getElementById('dash-activity').innerHTML=acts.length?acts.map(a=>`<div style="padding:9px 0;border-bottom:1px solid var(--navy-border);font-size:12px">${a}</div>`).join(''):'<p>Nenhuma atividade ainda.</p>';
 }
 
@@ -1097,14 +1204,251 @@ async function delDoc(type,id){
 }
 
 // ═══════════════════════════════════════════════════════
+// ORDENS DE SERVIÇO
+// ═══════════════════════════════════════════════════════
+function novaOS(id=null){
+  editingId = id;
+  const os = id ? db.ordens.find(x=>x.id===id) : null;
+  document.getElementById('modal-os-title').textContent = id ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço';
+  document.getElementById('os-cliente').innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${os&&c.id===os.clienteId?'selected':''}>${c.nome}</option>`).join('');
+  document.getElementById('os-data').value = os ? String(os.data).split('T')[0] : today();
+  document.getElementById('os-tipo').value = os ? os.tipo : 'Instalação';
+  document.getElementById('os-tecnico').value = os ? os.tecnico||'' : '';
+  document.getElementById('os-status').value = os ? os.status : 'Aberta';
+  document.getElementById('os-horario').value = os ? os.horario||'' : '';
+  document.getElementById('os-endereco').value = os ? os.endereco||'' : '';
+  document.getElementById('os-descricao').value = os ? os.descricao||'' : '';
+  document.getElementById('os-materiais').value = os ? os.materiais||'' : '';
+  document.getElementById('os-obs').value = os ? os.obs||'' : '';
+  openModal('modal-os');
+}
+async function salvarOS(){
+  const clienteId = document.getElementById('os-cliente').value;
+  const descricao = document.getElementById('os-descricao').value.trim();
+  if(!clienteId){ showToast('Selecione um cliente'); return; }
+  if(!descricao){ showToast('Descreva o serviço'); return; }
+  const cliente = db.clientes.find(c=>c.id===clienteId);
+  const isEditing = !!editingId;
+  const existing = isEditing ? db.ordens.find(x=>x.id===editingId) : null;
+  const os = {
+    id: isEditing ? editingId : genId(),
+    numero: isEditing && existing ? existing.numero : genNum('OS', db.ordens),
+    clienteId, clienteNome: cliente.nome, clienteTel: cliente.tel||'',
+    data: document.getElementById('os-data').value,
+    tipo: document.getElementById('os-tipo').value,
+    tecnico: document.getElementById('os-tecnico').value,
+    status: document.getElementById('os-status').value,
+    horario: document.getElementById('os-horario').value,
+    endereco: document.getElementById('os-endereco').value,
+    descricao, materiais: document.getElementById('os-materiais').value,
+    obs: document.getElementById('os-obs').value,
+  };
+  closeModal('modal-os');
+  showLoading(isEditing?'Atualizando OS...':'Salvando OS...');
+  try{
+    if(API_URL) await apiSave('Ordens', os);
+    if(isEditing){ const i=db.ordens.findIndex(x=>x.id===editingId); if(i>=0) db.ordens[i]=os; else db.ordens.push(os); }
+    else db.ordens.push(os);
+    editingId = null;
+    saveLocalCache(); renderOrdens(); updateBadges(); updateDashboard();
+    showToast((isEditing?'OS atualizada: ':'OS criada: ')+os.numero);
+  }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
+}
+function renderOrdens(){
+  const tbody=document.getElementById('tbody-ordens'), cards=document.getElementById('cards-ordens');
+  if(!tbody) return;
+  let list=[...db.ordens].reverse();
+  if(currentUser&&currentUser.role==='cliente'){
+    list=list.filter(o=>o.clienteNome&&o.clienteNome.toLowerCase().includes(currentUser.nome.toLowerCase()));
+  }
+  const empty='<div class="empty-state"><div class="empty-icon">🛠</div>Nenhuma ordem de serviço</div>';
+  const isCliente=currentUser&&currentUser.role==='cliente';
+  const statusBadge = s => s==='Concluída'?'badge-green':s==='Cancelada'?'badge-red':s==='Em Andamento'?'badge-amber':'badge-blue';
+  if(!list.length){ tbody.innerHTML=`<tr><td colspan="5">${empty}</td></tr>`; if(cards) cards.innerHTML=empty; return; }
+  tbody.innerHTML=list.map(o=>`<tr><td><b>${o.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(o.data)}</span></td><td>${o.clienteNome}</td><td>${o.tipo}</td><td><span class="badge ${statusBadge(o.status)}">${o.status}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></td></tr>`).join('');
+  if(cards) cards.innerHTML=list.map(o=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${o.numero}</span><span class="badge ${statusBadge(o.status)}">${o.status}</span></div><div class="row-card-meta"><span>👤 ${o.clienteNome}</span><span>🔧 ${o.tipo}</span><span>📅 ${fmtDate(o.data)}</span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></div>`).join('');
+}
+async function delOS(id){
+  if(!confirm('Excluir ordem de serviço?'))return;
+  showLoading('Removendo...');
+  try{ if(API_URL) await apiDelete('Ordens', id); db.ordens=db.ordens.filter(x=>x.id!==id); saveLocalCache(); renderOrdens(); updateBadges(); showToast('Removida!'); }
+  catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
+}
+function viewOS(id){
+  const os = db.ordens.find(x=>x.id===id);
+  if(!os) return;
+  const cl = db.clientes.find(x=>x.id===os.clienteId)||{};
+  const statusColor = os.status==='Concluída'?'#22c97a':os.status==='Cancelada'?'#e8305a':os.status==='Em Andamento'?'#f5a623':'#6fa3ff';
+  let h = '<div id="pdf-printable" style="background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:20px;width:100%;max-width:740px;box-sizing:border-box;">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #0E2432;gap:10px;">';
+  h += '<div style="flex:1;"><div style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>';
+  if(cfg.tel) h += '<div style="font-size:10px;color:#374151;margin-top:4px;">'+cfg.tel+'</div>';
+  h += '</div><div style="background:#0E2432;color:#fff;padding:8px 12px;border-radius:7px;text-align:center;flex-shrink:0;">';
+  h += '<div style="font-weight:800;font-size:11px;">ORDEM DE SERVIÇO</div>';
+  h += '<div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;">N° '+os.numero+'</div>';
+  h += '<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">Data: '+fmtDate(os.data)+'</div></div></div>';
+  h += '<div style="display:inline-block;background:'+statusColor+';color:#fff;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:14px;">'+os.status+'</div>';
+  h += '<div style="margin-bottom:14px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
+  h += '<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
+  h += '<div style="font-size:13px;font-weight:700;color:#0E2432;">'+os.clienteNome+'</div>';
+  if(cl.tel) h += '<div style="font-size:11px;color:#374151;">Tel: '+cl.tel+'</div>';
+  if(os.endereco) h += '<div style="font-size:11px;color:#374151;">📍 '+os.endereco+'</div>';
+  h += '</div></div>';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
+  h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">TIPO</div><div style="font-size:12px;color:#111;">'+os.tipo+'</div></div>';
+  if(os.tecnico) h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">TÉCNICO</div><div style="font-size:12px;color:#111;">'+os.tecnico+'</div></div>';
+  if(os.horario) h += '<div style="flex:1;min-width:100px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">HORÁRIO</div><div style="font-size:12px;color:#111;">'+os.horario+'</div></div>';
+  h += '</div>';
+  h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">DESCRIÇÃO DO SERVIÇO</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;">'+(os.descricao||'—')+'</div></div>';
+  if(os.materiais) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">MATERIAIS UTILIZADOS</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;">'+os.materiais+'</div></div>';
+  if(os.obs) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">OBSERVAÇÕES</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;">'+os.obs+'</div></div>';
+  h += '<div style="margin-top:24px;display:flex;justify-content:space-between;gap:20px;">';
+  h += '<div style="text-align:center;flex:1;"><div style="border-top:1px solid #374151;padding-top:5px;font-size:10px;color:#6b7280;">Técnico Responsável</div></div>';
+  h += '<div style="text-align:center;flex:1;"><div style="border-top:1px solid #374151;padding-top:5px;font-size:10px;color:#6b7280;">Cliente — '+os.clienteNome+'</div></div>';
+  h += '</div>';
+  h += '<div style="margin-top:14px;padding-top:10px;border-top:2px solid #0E2432;font-size:10px;color:#6b7280;text-align:right;">'+(cfg.rodape||'')+'</div>';
+  h += '</div>';
+  viewingDoc = {...os, type:'os'};
+  document.getElementById('modal-view-title').textContent = '🛠 ' + os.numero;
+  document.getElementById('pdf-content').innerHTML = h;
+  const editBtn = document.getElementById('btn-editar-doc');
+  if(editBtn) editBtn.style.display = 'none';
+  openModal('modal-view');
+}
+
+// ═══════════════════════════════════════════════════════
+// LAUDOS TÉCNICOS
+// ═══════════════════════════════════════════════════════
+function novoLaudo(id=null){
+  editingId = id;
+  const laudo = id ? db.laudos.find(x=>x.id===id) : null;
+  document.getElementById('modal-laudo-title').textContent = id ? 'Editar Laudo Técnico' : 'Novo Laudo Técnico';
+  document.getElementById('laudo-cliente').innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${laudo&&c.id===laudo.clienteId?'selected':''}>${c.nome}</option>`).join('');
+  document.getElementById('laudo-data').value = laudo ? String(laudo.data).split('T')[0] : today();
+  document.getElementById('laudo-tecnico').value = laudo ? laudo.tecnico||'' : '';
+  document.getElementById('laudo-tipo').value = laudo ? laudo.tipo : 'Diagnóstico';
+  document.getElementById('laudo-endereco').value = laudo ? laudo.endereco||'' : '';
+  document.getElementById('laudo-equipamentos').value = laudo ? laudo.equipamentos||'' : '';
+  document.getElementById('laudo-constatacoes').value = laudo ? laudo.constatacoes||'' : '';
+  document.getElementById('laudo-recomendacoes').value = laudo ? laudo.recomendacoes||'' : '';
+  document.getElementById('laudo-conclusao').value = laudo ? laudo.conclusao : 'Sistema Funcional';
+  document.getElementById('laudo-obs').value = laudo ? laudo.obs||'' : '';
+  openModal('modal-laudo');
+}
+async function salvarLaudo(){
+  const clienteId = document.getElementById('laudo-cliente').value;
+  const constatacoes = document.getElementById('laudo-constatacoes').value.trim();
+  if(!clienteId){ showToast('Selecione um cliente'); return; }
+  if(!constatacoes){ showToast('Descreva as constatações técnicas'); return; }
+  const cliente = db.clientes.find(c=>c.id===clienteId);
+  const isEditing = !!editingId;
+  const existing = isEditing ? db.laudos.find(x=>x.id===editingId) : null;
+  const laudo = {
+    id: isEditing ? editingId : genId(),
+    numero: isEditing && existing ? existing.numero : genNum('LD', db.laudos),
+    clienteId, clienteNome: cliente.nome, clienteTel: cliente.tel||'',
+    data: document.getElementById('laudo-data').value,
+    tecnico: document.getElementById('laudo-tecnico').value,
+    tipo: document.getElementById('laudo-tipo').value,
+    endereco: document.getElementById('laudo-endereco').value,
+    equipamentos: document.getElementById('laudo-equipamentos').value,
+    constatacoes, recomendacoes: document.getElementById('laudo-recomendacoes').value,
+    conclusao: document.getElementById('laudo-conclusao').value,
+    obs: document.getElementById('laudo-obs').value,
+  };
+  closeModal('modal-laudo');
+  showLoading(isEditing?'Atualizando laudo...':'Salvando laudo...');
+  try{
+    if(API_URL) await apiSave('Laudos', laudo);
+    if(isEditing){ const i=db.laudos.findIndex(x=>x.id===editingId); if(i>=0) db.laudos[i]=laudo; else db.laudos.push(laudo); }
+    else db.laudos.push(laudo);
+    editingId = null;
+    saveLocalCache(); renderLaudos(); updateBadges(); updateDashboard();
+    showToast((isEditing?'Laudo atualizado: ':'Laudo criado: ')+laudo.numero);
+  }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
+}
+function renderLaudos(){
+  const tbody=document.getElementById('tbody-laudos'), cards=document.getElementById('cards-laudos');
+  if(!tbody) return;
+  let list=[...db.laudos].reverse();
+  if(currentUser&&currentUser.role==='cliente'){
+    list=list.filter(l=>l.clienteNome&&l.clienteNome.toLowerCase().includes(currentUser.nome.toLowerCase()));
+  }
+  const empty='<div class="empty-state"><div class="empty-icon">📝</div>Nenhum laudo técnico</div>';
+  const isCliente=currentUser&&currentUser.role==='cliente';
+  const conclusaoBadge = c => c==='Sistema Funcional'||c==='Aprovado'?'badge-green':c==='Sistema Comprometido'?'badge-red':'badge-amber';
+  if(!list.length){ tbody.innerHTML=`<tr><td colspan="5">${empty}</td></tr>`; if(cards) cards.innerHTML=empty; return; }
+  tbody.innerHTML=list.map(l=>`<tr><td><b>${l.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(l.data)}</span></td><td>${l.clienteNome}</td><td>${fmtDate(l.data)}</td><td><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></td></tr>`).join('');
+  if(cards) cards.innerHTML=list.map(l=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${l.numero}</span><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></div><div class="row-card-meta"><span>👤 ${l.clienteNome}</span><span>📅 ${fmtDate(l.data)}</span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></div>`).join('');
+}
+async function delLaudo(id){
+  if(!confirm('Excluir laudo técnico?'))return;
+  showLoading('Removendo...');
+  try{ if(API_URL) await apiDelete('Laudos', id); db.laudos=db.laudos.filter(x=>x.id!==id); saveLocalCache(); renderLaudos(); updateBadges(); showToast('Removido!'); }
+  catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
+}
+function viewLaudo(id){
+  const laudo = db.laudos.find(x=>x.id===id);
+  if(!laudo) return;
+  const cl = db.clientes.find(x=>x.id===laudo.clienteId)||{};
+  const conclusaoColor = (laudo.conclusao==='Sistema Funcional'||laudo.conclusao==='Aprovado')?'#22c97a':laudo.conclusao==='Sistema Comprometido'?'#e8305a':'#f5a623';
+  let h = '<div id="pdf-printable" style="background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:20px;width:100%;max-width:740px;box-sizing:border-box;">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #0E2432;gap:10px;">';
+  h += '<div style="flex:1;"><div style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>';
+  if(cfg.tel) h += '<div style="font-size:10px;color:#374151;margin-top:4px;">'+cfg.tel+'</div>';
+  h += '</div><div style="background:#0E2432;color:#fff;padding:8px 12px;border-radius:7px;text-align:center;flex-shrink:0;">';
+  h += '<div style="font-weight:800;font-size:11px;">LAUDO TÉCNICO</div>';
+  h += '<div style="font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;">N° '+laudo.numero+'</div>';
+  h += '<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">Data: '+fmtDate(laudo.data)+'</div></div></div>';
+  h += '<div style="display:inline-block;background:'+conclusaoColor+';color:#fff;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:14px;">'+laudo.conclusao+'</div>';
+  h += '<div style="margin-bottom:14px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
+  h += '<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
+  h += '<div style="font-size:13px;font-weight:700;color:#0E2432;">'+laudo.clienteNome+'</div>';
+  if(cl.tel) h += '<div style="font-size:11px;color:#374151;">Tel: '+cl.tel+'</div>';
+  if(laudo.endereco) h += '<div style="font-size:11px;color:#374151;">📍 '+laudo.endereco+'</div>';
+  h += '</div></div>';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
+  h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">TIPO DE VISTORIA</div><div style="font-size:12px;color:#111;">'+laudo.tipo+'</div></div>';
+  if(laudo.tecnico) h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">TÉCNICO</div><div style="font-size:12px;color:#111;">'+laudo.tecnico+'</div></div>';
+  h += '</div>';
+  if(laudo.equipamentos) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">EQUIPAMENTOS AVALIADOS</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;">'+laudo.equipamentos+'</div></div>';
+  h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CONSTATAÇÕES TÉCNICAS</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;">'+(laudo.constatacoes||'—')+'</div></div>';
+  if(laudo.recomendacoes) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">RECOMENDAÇÕES</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#fff8f4;border-left:4px solid #e8500a;border-radius:0 6px 6px 0;">'+laudo.recomendacoes+'</div></div>';
+  if(laudo.obs) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">OBSERVAÇÕES FINAIS</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;">'+laudo.obs+'</div></div>';
+  h += '<div style="margin-top:24px;text-align:center;"><div style="border-top:1px solid #374151;padding-top:5px;font-size:10px;color:#6b7280;display:inline-block;min-width:220px;">'+(laudo.tecnico||cfg.nome||'FAS Segurança Eletrônica')+'<br>Responsável Técnico</div></div>';
+  h += '<div style="margin-top:14px;padding-top:10px;border-top:2px solid #0E2432;font-size:10px;color:#6b7280;text-align:right;">'+(cfg.rodape||'')+'</div>';
+  h += '</div>';
+  viewingDoc = {...laudo, type:'laudo'};
+  document.getElementById('modal-view-title').textContent = '📝 ' + laudo.numero;
+  document.getElementById('pdf-content').innerHTML = h;
+  const editBtn = document.getElementById('btn-editar-doc');
+  if(editBtn) editBtn.style.display = 'none';
+  openModal('modal-view');
+}
+
+// ═══════════════════════════════════════════════════════
 // PDF
 // ═══════════════════════════════════════════════════════
 function parseItems(raw){
-  if(Array.isArray(raw)) return raw;
-  if(typeof raw==='string' && raw.trim().startsWith('[')){
-    try{ return JSON.parse(raw); }catch(e){}
+  let val = raw;
+  // Tenta parsear até 3 vezes (caso esteja stringificado múltiplas vezes)
+  for(let i=0; i<3; i++){
+    if(Array.isArray(val)) return val;
+    if(typeof val==='string'){
+      const trimmed = val.trim();
+      if(trimmed.startsWith('[') || trimmed.startsWith('"[')){
+        try{
+          val = JSON.parse(trimmed);
+          continue;
+        }catch(e){ break; }
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
   }
-  return [];
+  return Array.isArray(val) ? val : [];
 }
 
 function viewDoc(type,id){
