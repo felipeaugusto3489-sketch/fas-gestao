@@ -222,6 +222,20 @@
   .pdf-footer-logo{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#0E2432;}
   .pdf-footer-logo span{color:#e8500a;}
 
+  /* ── FOLLOW-UP ── */
+  .fu-check{display:flex;align-items:center;gap:6px;background:var(--navy-light);border:1px solid var(--navy-border);padding:8px 12px;border-radius:8px;font-size:12px;color:var(--text);cursor:pointer;transition:all .15s;user-select:none;}
+  .fu-check:has(input:checked){background:var(--orange-dim);border-color:var(--orange-bdr);color:var(--orange-h);font-weight:600;}
+  .fu-check input{accent-color:var(--orange);width:14px;height:14px;cursor:pointer;}
+  .fu-badge-status{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;}
+  .fu-badge-quente{background:rgba(232,48,90,.12);color:#ff5c7a;border:1px solid rgba(232,48,90,.3);}
+  .fu-badge-morno{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.3);}
+  .fu-badge-frio{background:rgba(111,163,255,.12);color:#6fa3ff;border:1px solid rgba(111,163,255,.3);}
+  .fu-prio-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .fu-prio-alta{background:#e8305a;}
+  .fu-prio-media{background:#f5a623;}
+  .fu-prio-baixa{background:#22c97a;}
+  .fu-atrasado{color:#e8500a!important;font-weight:700;}
+
   /* ── MISC ── */
   .action-btns{display:flex;gap:5px;flex-wrap:wrap;}
   .empty-state{text-align:center;padding:36px 20px;color:var(--text-soft);}
@@ -354,6 +368,13 @@
         </div>
       </div>
       <div class="nav-group">
+        <div class="nav-label">Comercial</div>
+        <div class="nav-item" onclick="showPage('followup',this)">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          <span class="nav-text">Follow-up</span><span class="nav-badge" id="badge-followup">0</span>
+        </div>
+      </div>
+      <div class="nav-group">
         <div class="nav-label">Sistema</div>
         <div class="nav-item" onclick="showPage('config',this)">
           <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -452,6 +473,41 @@
       <div class="card">
         <div><table><thead><tr><th>Nº</th><th>Cliente</th><th>Data</th><th>Conclusão</th><th>Ações</th></tr></thead><tbody id="tbody-laudos"><tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📝</div>Carregando...</div></td></tr></tbody></table></div>
         <div class="row-card" id="cards-laudos"></div>
+      </div>
+    </div>
+
+    <!-- FOLLOW-UP -->
+    <div class="page" id="page-followup">
+      <button class="btn-back" onclick="voltarPagina()">← Voltar</button>
+      <div class="page-header"><div class="page-title">Follow-up de Leads</div><button class="btn btn-primary" id="btn-novo-followup" onclick="novoFollowup()">+ Novo Lead</button></div>
+
+      <div class="stats-grid" id="followup-stats" style="margin-bottom:16px;">
+        <div class="stat-card"><div class="stat-label">🔥 Quentes</div><div class="stat-value" id="stat-fu-quente" style="color:#e8305a">0</div></div>
+        <div class="stat-card"><div class="stat-label">🌡 Mornos</div><div class="stat-value" id="stat-fu-morno" style="color:#f5a623">0</div></div>
+        <div class="stat-card"><div class="stat-label">❄ Frios</div><div class="stat-value" id="stat-fu-frio" style="color:#6fa3ff">0</div></div>
+        <div class="stat-card"><div class="stat-label">⏰ Atrasados</div><div class="stat-value" id="stat-fu-atrasado" style="color:#e8500a">0</div></div>
+      </div>
+
+      <div class="search-bar" style="flex-wrap:wrap;">
+        <input class="search-input" type="text" placeholder="🔍 Buscar lead..." oninput="filterFollowup(this.value)" style="flex:2;min-width:140px;">
+        <select id="fu-filter-status" onchange="renderFollowup()" style="flex:1;min-width:120px;background:var(--navy-light);border:1px solid var(--navy-border);color:var(--text);padding:9px 13px;border-radius:8px;font-size:13px;">
+          <option value="">Todos status</option>
+          <option value="quente">🔥 Quente</option>
+          <option value="morno">🌡 Morno</option>
+          <option value="frio">❄ Frio</option>
+        </select>
+        <select id="fu-filter-prioridade" onchange="renderFollowup()" style="flex:1;min-width:120px;background:var(--navy-light);border:1px solid var(--navy-border);color:var(--text);padding:9px 13px;border-radius:8px;font-size:13px;">
+          <option value="">Toda prioridade</option>
+          <option value="alta">🔴 Alta</option>
+          <option value="media">🟡 Média</option>
+          <option value="baixa">🟢 Baixa</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div><table><thead><tr><th>Cliente</th><th>Status</th><th>Prioridade</th><th>Próximo Contato</th><th>Interesse</th><th>Ações</th></tr></thead>
+        <tbody id="tbody-followup"><tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📞</div>Carregando...</div></td></tr></tbody></table></div>
+        <div class="row-card" id="cards-followup"></div>
       </div>
     </div>
 
@@ -673,6 +729,116 @@
   </div>
 </div>
 
+<!-- Modal Follow-up -->
+<div class="overlay" id="modal-followup">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="modal-followup-title">Novo Lead</div><button class="close-btn" onclick="closeModal('modal-followup')">✕</button></div>
+
+    <div style="font-size:10px;font-weight:700;margin-bottom:8px;color:var(--text-soft);letter-spacing:.1em;text-transform:uppercase;font-family:'Montserrat',sans-serif;">👤 IDENTIFICAÇÃO DO CLIENTE</div>
+    <div class="form-grid" style="margin-bottom:14px;">
+      <div class="form-group full">
+        <label>Cliente *</label>
+        <select id="fu-cliente" onchange="onFollowupClienteSelect(this.value)"><option value="">Selecionar cliente cadastrado...</option></select>
+      </div>
+      <div class="form-group"><label>Nome</label><input id="fu-nome" placeholder="Preenchido automaticamente" readonly style="opacity:.75"></div>
+      <div class="form-group"><label>Telefone</label><input id="fu-telefone" placeholder="Preenchido automaticamente" readonly style="opacity:.75"></div>
+      <div class="form-group full"><label>Endereço</label><input id="fu-endereco" placeholder="Preenchido automaticamente" readonly style="opacity:.75"></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="fu-tipo"><option value="Residência">Residência</option><option value="Empresa">Empresa</option></select>
+      </div>
+      <div class="form-group"><label>Origem do Lead</label>
+        <select id="fu-origem">
+          <option value="Google">Google</option>
+          <option value="Indicação">Indicação</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Tráfego pago">Tráfego pago</option>
+          <option value="Cliente antigo">Cliente antigo</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-weight:700;margin-bottom:8px;color:var(--text-soft);letter-spacing:.1em;text-transform:uppercase;font-family:'Montserrat',sans-serif;">🎯 INTERESSE E NEGÓCIO</div>
+    <div class="form-grid" style="margin-bottom:14px;">
+      <div class="form-group full">
+        <label>Interesse do Cliente</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+          <label class="fu-check"><input type="checkbox" value="Câmeras" class="fu-interesse"> Câmeras</label>
+          <label class="fu-check"><input type="checkbox" value="Alarme" class="fu-interesse"> Alarme</label>
+          <label class="fu-check"><input type="checkbox" value="Concertina" class="fu-interesse"> Concertina</label>
+          <label class="fu-check"><input type="checkbox" value="Cerca elétrica" class="fu-interesse"> Cerca elétrica</label>
+          <label class="fu-check"><input type="checkbox" value="Motor de portão" class="fu-interesse"> Motor de portão</label>
+          <label class="fu-check"><input type="checkbox" value="Energia solar" class="fu-interesse"> Energia solar</label>
+          <label class="fu-check"><input type="checkbox" value="Automação" class="fu-interesse"> Automação</label>
+        </div>
+      </div>
+      <div class="form-group"><label>Data do Primeiro Contato</label><input id="fu-data-contato" type="date"></div>
+      <div class="form-group"><label>Canal Preferido</label>
+        <select id="fu-canal">
+          <option value="WhatsApp">WhatsApp</option>
+          <option value="Telefone">Telefone</option>
+          <option value="E-mail">E-mail</option>
+          <option value="Presencial">Presencial</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Valor do Orçamento (R$)</label><input id="fu-valor" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div class="form-group"><label>Valor Fechado (R$)</label><input id="fu-valor-fechado" type="number" step="0.01" min="0" placeholder="Preencher se fechou"></div>
+    </div>
+
+    <div style="font-size:10px;font-weight:700;margin-bottom:8px;color:var(--text-soft);letter-spacing:.1em;text-transform:uppercase;font-family:'Montserrat',sans-serif;">📊 STATUS E ACOMPANHAMENTO</div>
+    <div class="form-grid" style="margin-bottom:14px;">
+      <div class="form-group"><label>Status do Lead</label>
+        <select id="fu-status">
+          <option value="quente">🔥 Quente — quer fechar logo</option>
+          <option value="morno">🌡 Morno — avaliando</option>
+          <option value="frio">❄ Frio — sumido</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Prioridade</label>
+        <select id="fu-prioridade">
+          <option value="alta">🔴 Alta</option>
+          <option value="media">🟡 Média</option>
+          <option value="baixa">🟢 Baixa</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Próximo Follow-up — Data</label><input id="fu-prox-data" type="date"></div>
+      <div class="form-group"><label>Próximo Follow-up — Hora</label><input id="fu-prox-hora" type="time"></div>
+      <div class="form-group"><label>Responsável pelo Atendimento</label>
+        <select id="fu-responsavel" onchange="document.getElementById('fu-responsavel-outro-wrap').style.display=this.value==='Outro'?'':'none'">
+          <option value="Felipe">Felipe</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="form-group" id="fu-responsavel-outro-wrap" style="display:none;"><label>Qual responsável?</label><input id="fu-responsavel-outro" placeholder="Nome do responsável"></div>
+    </div>
+
+    <div class="form-group full" style="margin-bottom:14px;">
+      <label>📝 Histórico de Contato</label>
+      <textarea id="fu-historico" placeholder="Registre aqui o histórico de conversas, ligações, visitas..." style="min-height:90px;"></textarea>
+    </div>
+
+    <div style="font-size:10px;font-weight:700;margin-bottom:8px;color:var(--text-soft);letter-spacing:.1em;text-transform:uppercase;font-family:'Montserrat',sans-serif;">❌ SE NÃO FECHOU</div>
+    <div class="form-grid" style="margin-bottom:6px;">
+      <div class="form-group">
+        <label>Motivo da Perda</label>
+        <select id="fu-motivo-perda" onchange="document.getElementById('fu-motivo-outro-wrap').style.display=this.value==='Outro'?'':'none'">
+          <option value="">— Lead ainda em aberto —</option>
+          <option value="Preço">Preço</option>
+          <option value="Fechou com concorrente">Fechou com concorrente</option>
+          <option value="Sem retorno">Sem retorno</option>
+          <option value="Não quis mais">Não quis mais</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="form-group" id="fu-motivo-outro-wrap" style="display:none;"><label>Qual motivo?</label><input id="fu-motivo-outro" placeholder="Descreva o motivo"></div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-followup')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFollowup()">💾 Salvar Lead</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-view">
   <div class="modal modal-lg" style="padding:14px;">
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap;">
@@ -703,7 +869,7 @@ let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 // ═══════════════════════════════════════════════════════
 // STATE LOCAL (cache)
 // ═══════════════════════════════════════════════════════
-let db = { clientes:[], produtos:[], orcamentos:[], recibos:[], ordens:[], laudos:[] };
+let db = { clientes:[], produtos:[], orcamentos:[], recibos:[], ordens:[], laudos:[], followup:[] };
 let cfg = {
   nome:'FAS Segurança Eletrônica', cnpj:'', tel:'(17) 98100-2178',
   email:'contato@fassegurancaeletronica.com.br',
@@ -832,10 +998,10 @@ async function syncAll() {
   setSyncStatus('syncing', 'Sincronizando...');
   showLoading('Sincronizando com Google Sheets...');
   try {
-    const [clientes, produtos, orcamentos, recibos, ordens, laudos] = await Promise.all([
+    const [clientes, produtos, orcamentos, recibos, ordens, laudos, followup] = await Promise.all([
       apiGetAll('Clientes'), apiGetAll('Produtos'),
       apiGetAll('Orcamentos'), apiGetAll('Recibos'),
-      apiGetAll('Ordens'), apiGetAll('Laudos')
+      apiGetAll('Ordens'), apiGetAll('Laudos'), apiGetAll('Followup')
     ]);
     db.clientes   = clientes;
     db.produtos   = produtos;
@@ -843,6 +1009,7 @@ async function syncAll() {
     db.recibos    = recibos;
     db.ordens     = ordens;
     db.laudos     = laudos;
+    db.followup   = followup;
     saveLocalCache();
     setSyncStatus('ok', 'Conectado ao Google Sheets');
     renderAll();
@@ -887,7 +1054,7 @@ async function testarConexao() {
 function renderAll() {
   updateBadges(); updateDashboard();
   renderClientes(); renderProdutos(); renderOrcamentos(); renderRecibos();
-  renderOrdens(); renderLaudos();
+  renderOrdens(); renderLaudos(); renderFollowup();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -930,6 +1097,7 @@ function _goToPage(page,el){
   if(page==='recibos')renderRecibos();
   if(page==='ordens')renderOrdens();
   if(page==='laudos')renderLaudos();
+  if(page==='followup')renderFollowup();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -952,7 +1120,7 @@ function today(){return new Date().toISOString().split('T')[0];}
 function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().split('T')[0];}
 function isMobile(){return window.innerWidth<=768;}
 
-function updateBadges(){['clientes','produtos','orcamentos','recibos','ordens','laudos'].forEach(k=>{const el=document.getElementById('badge-'+k); if(el) el.textContent=db[k].length;});}
+function updateBadges(){['clientes','produtos','orcamentos','recibos','ordens','laudos','followup'].forEach(k=>{const el=document.getElementById('badge-'+k); if(el) el.textContent=db[k].length;});}
 function updateDashboard(){
   ['clientes','produtos','orcamentos','recibos'].forEach(k=>document.getElementById('stat-'+k).textContent=db[k].length);
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -1635,11 +1803,250 @@ function abrirEmail(){
 }
 
 // ═══════════════════════════════════════════════════════
-// LOGO & ASSINATURA
+// FOLLOW-UP DE LEADS
 // ═══════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════
-// LOGO & ASSINATURA — com sincronização na nuvem
-// ═══════════════════════════════════════════════════════
+function onFollowupClienteSelect(clienteId){
+  const c = db.clientes.find(x=>x.id===clienteId);
+  document.getElementById('fu-nome').value = c ? c.nome : '';
+  document.getElementById('fu-telefone').value = c ? (c.tel||'') : '';
+  document.getElementById('fu-endereco').value = c ? `${c.endereco||''}${c.cidade?' - '+c.cidade:''}${c.estado?'/'+c.estado:''}` : '';
+}
+
+function novoFollowup(id=null){
+  editingId = id;
+  const lead = id ? db.followup.find(x=>x.id===id) : null;
+  document.getElementById('modal-followup-title').textContent = id ? 'Editar Lead' : 'Novo Lead';
+
+  const sel = document.getElementById('fu-cliente');
+  sel.innerHTML = '<option value="">Selecionar cliente cadastrado...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${lead&&c.id===lead.clienteId?'selected':''}>${c.nome}</option>`).join('');
+
+  if(lead){
+    onFollowupClienteSelect(lead.clienteId);
+    document.getElementById('fu-tipo').value = lead.tipo || 'Residência';
+    document.getElementById('fu-origem').value = lead.origem || 'Google';
+    document.getElementById('fu-data-contato').value = lead.dataContato ? String(lead.dataContato).split('T')[0] : today();
+    document.getElementById('fu-canal').value = lead.canal || 'WhatsApp';
+    document.getElementById('fu-valor').value = lead.valor || '';
+    document.getElementById('fu-valor-fechado').value = lead.valorFechado || '';
+    document.getElementById('fu-status').value = lead.status || 'morno';
+    document.getElementById('fu-prioridade').value = lead.prioridade || 'media';
+    document.getElementById('fu-prox-data').value = lead.proxData ? String(lead.proxData).split('T')[0] : '';
+    document.getElementById('fu-prox-hora').value = lead.proxHora || '';
+    document.getElementById('fu-responsavel').value = (lead.responsavel==='Felipe') ? 'Felipe' : 'Outro';
+    document.getElementById('fu-responsavel-outro').value = (lead.responsavel!=='Felipe') ? (lead.responsavel||'') : '';
+    document.getElementById('fu-responsavel-outro-wrap').style.display = (lead.responsavel!=='Felipe') ? '' : 'none';
+    document.getElementById('fu-historico').value = lead.historico || '';
+    document.getElementById('fu-motivo-perda').value = ['Preço','Fechou com concorrente','Sem retorno','Não quis mais'].includes(lead.motivoPerda) ? lead.motivoPerda : (lead.motivoPerda ? 'Outro' : '');
+    document.getElementById('fu-motivo-outro').value = (lead.motivoPerda && !['Preço','Fechou com concorrente','Sem retorno','Não quis mais'].includes(lead.motivoPerda)) ? lead.motivoPerda : '';
+    document.getElementById('fu-motivo-outro-wrap').style.display = document.getElementById('fu-motivo-perda').value==='Outro' ? '' : 'none';
+    const interesses = (lead.interesse||'').split(',').map(s=>s.trim()).filter(Boolean);
+    document.querySelectorAll('.fu-interesse').forEach(cb=>{ cb.checked = interesses.includes(cb.value); });
+  } else {
+    document.getElementById('fu-nome').value = '';
+    document.getElementById('fu-telefone').value = '';
+    document.getElementById('fu-endereco').value = '';
+    document.getElementById('fu-tipo').value = 'Residência';
+    document.getElementById('fu-origem').value = 'Google';
+    document.getElementById('fu-data-contato').value = today();
+    document.getElementById('fu-canal').value = 'WhatsApp';
+    document.getElementById('fu-valor').value = '';
+    document.getElementById('fu-valor-fechado').value = '';
+    document.getElementById('fu-status').value = 'morno';
+    document.getElementById('fu-prioridade').value = 'media';
+    document.getElementById('fu-prox-data').value = '';
+    document.getElementById('fu-prox-hora').value = '';
+    document.getElementById('fu-responsavel').value = 'Felipe';
+    document.getElementById('fu-responsavel-outro').value = '';
+    document.getElementById('fu-responsavel-outro-wrap').style.display = 'none';
+    document.getElementById('fu-historico').value = '';
+    document.getElementById('fu-motivo-perda').value = '';
+    document.getElementById('fu-motivo-outro').value = '';
+    document.getElementById('fu-motivo-outro-wrap').style.display = 'none';
+    document.querySelectorAll('.fu-interesse').forEach(cb=>{ cb.checked = false; });
+  }
+  openModal('modal-followup');
+}
+
+async function salvarFollowup(){
+  const clienteId = document.getElementById('fu-cliente').value;
+  if(!clienteId){ showToast('Selecione um cliente'); return; }
+  const cliente = db.clientes.find(c=>c.id===clienteId);
+  const interesse = Array.from(document.querySelectorAll('.fu-interesse:checked')).map(cb=>cb.value).join(', ');
+  const responsavelSel = document.getElementById('fu-responsavel').value;
+  const responsavel = responsavelSel==='Outro' ? (document.getElementById('fu-responsavel-outro').value.trim()||'Outro') : 'Felipe';
+  const motivoSel = document.getElementById('fu-motivo-perda').value;
+  const motivoPerda = motivoSel==='Outro' ? document.getElementById('fu-motivo-outro').value.trim() : motivoSel;
+
+  const isEditing = !!editingId;
+  const existing = isEditing ? db.followup.find(x=>x.id===editingId) : null;
+
+  const lead = {
+    id: isEditing ? editingId : genId(),
+    numero: isEditing && existing ? existing.numero : genNum('LEAD', db.followup),
+    clienteId, clienteNome: cliente.nome, clienteTel: cliente.tel||'', clienteEndereco: cliente.endereco||'',
+    tipo: document.getElementById('fu-tipo').value,
+    origem: document.getElementById('fu-origem').value,
+    interesse,
+    dataContato: document.getElementById('fu-data-contato').value,
+    canal: document.getElementById('fu-canal').value,
+    valor: parseFloat(document.getElementById('fu-valor').value)||0,
+    valorFechado: parseFloat(document.getElementById('fu-valor-fechado').value)||0,
+    status: document.getElementById('fu-status').value,
+    prioridade: document.getElementById('fu-prioridade').value,
+    proxData: document.getElementById('fu-prox-data').value,
+    proxHora: document.getElementById('fu-prox-hora').value,
+    responsavel,
+    historico: document.getElementById('fu-historico').value,
+    motivoPerda,
+  };
+
+  closeModal('modal-followup');
+  showLoading(isEditing?'Atualizando lead...':'Salvando lead...');
+  try{
+    if(API_URL) await apiSave('Followup', lead);
+    if(isEditing){ const i=db.followup.findIndex(x=>x.id===editingId); if(i>=0) db.followup[i]=lead; else db.followup.push(lead); }
+    else db.followup.push(lead);
+    editingId = null;
+    saveLocalCache(); renderFollowup(); updateBadges();
+    showToast((isEditing?'Lead atualizado: ':'Lead criado: ')+lead.numero);
+  }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
+}
+
+async function delFollowup(id){
+  if(!confirm('Excluir este lead?'))return;
+  showLoading('Removendo...');
+  try{ if(API_URL) await apiDelete('Followup', id); db.followup=db.followup.filter(x=>x.id!==id); saveLocalCache(); renderFollowup(); updateBadges(); showToast('Lead removido!'); }
+  catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
+}
+
+function diasAteHoje(dataStr){
+  if(!dataStr) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const alvo = new Date(String(dataStr).split('T')[0]+'T00:00:00');
+  return Math.round((alvo - hoje) / 86400000);
+}
+
+function statusLabel(s){
+  return s==='quente' ? '🔥 Quente' : s==='frio' ? '❄ Frio' : '🌡 Morno';
+}
+function prioridadeLabel(p){
+  return p==='alta' ? '🔴 Alta' : p==='baixa' ? '🟢 Baixa' : '🟡 Média';
+}
+
+let fuFilterText = '';
+function filterFollowup(val){ fuFilterText = (val||'').toLowerCase(); renderFollowup(); }
+
+function renderFollowup(){
+  const tbody = document.getElementById('tbody-followup');
+  const cards = document.getElementById('cards-followup');
+  if(!tbody) return;
+
+  let list = [...db.followup].reverse();
+
+  const statusFilter = document.getElementById('fu-filter-status') ? document.getElementById('fu-filter-status').value : '';
+  const prioFilter = document.getElementById('fu-filter-prioridade') ? document.getElementById('fu-filter-prioridade').value : '';
+  if(statusFilter) list = list.filter(l=>l.status===statusFilter);
+  if(prioFilter) list = list.filter(l=>l.prioridade===prioFilter);
+  if(fuFilterText) list = list.filter(l=>(l.clienteNome||'').toLowerCase().includes(fuFilterText) || (l.interesse||'').toLowerCase().includes(fuFilterText));
+
+  // Stats (sempre sobre o total, não filtrado)
+  const all = db.followup;
+  document.getElementById('stat-fu-quente').textContent = all.filter(l=>l.status==='quente').length;
+  document.getElementById('stat-fu-morno').textContent = all.filter(l=>l.status==='morno').length;
+  document.getElementById('stat-fu-frio').textContent = all.filter(l=>l.status==='frio').length;
+  document.getElementById('stat-fu-atrasado').textContent = all.filter(l=>{ const d=diasAteHoje(l.proxData); return d!==null && d<0; }).length;
+
+  const empty = '<div class="empty-state"><div class="empty-icon">📞</div>Nenhum lead encontrado</div>';
+  if(!list.length){ tbody.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`; if(cards) cards.innerHTML = empty; return; }
+
+  const rowHtml = (l) => {
+    const dias = diasAteHoje(l.proxData);
+    const atrasado = dias!==null && dias<0;
+    const proxTxt = l.proxData ? fmtDate(l.proxData) + (l.proxHora?' às '+l.proxHora:'') : '—';
+    const interesseTxt = l.interesse ? l.interesse.split(',').slice(0,2).join(', ') + (l.interesse.split(',').length>2?'...':'') : '—';
+    return { dias, atrasado, proxTxt, interesseTxt };
+  };
+
+  tbody.innerHTML = list.map(l=>{
+    const {atrasado, proxTxt, interesseTxt} = rowHtml(l);
+    return `<tr>
+      <td><b>${l.clienteNome}</b><br><span style="color:#8ab0c8;font-size:11px">${l.tipo||''}</span></td>
+      <td><span class="fu-badge-status fu-badge-${l.status}">${statusLabel(l.status)}</span></td>
+      <td><span class="fu-prio-dot fu-prio-${l.prioridade}"></span> ${prioridadeLabel(l.prioridade).split(' ').slice(1).join(' ')}</td>
+      <td class="${atrasado?'fu-atrasado':''}">${proxTxt}${atrasado?' ⚠️':''}</td>
+      <td style="font-size:12px;">${interesseTxt}</td>
+      <td><div class="action-btns">
+        <button class="btn btn-outline btn-sm" onclick="viewFollowup('${l.id}')">👁</button>
+        <button class="btn btn-outline btn-sm" onclick="novoFollowup('${l.id}')">✏</button>
+        <button class="btn btn-red btn-sm" onclick="delFollowup('${l.id}')">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  if(cards) cards.innerHTML = list.map(l=>{
+    const {atrasado, proxTxt, interesseTxt} = rowHtml(l);
+    return `<div class="row-card-item">
+      <div class="row-card-top">
+        <span class="row-card-title">${l.clienteNome}</span>
+        <span class="fu-badge-status fu-badge-${l.status}">${statusLabel(l.status)}</span>
+      </div>
+      <div class="row-card-meta">
+        <span><span class="fu-prio-dot fu-prio-${l.prioridade}"></span> ${prioridadeLabel(l.prioridade).split(' ').slice(1).join(' ')}</span>
+        <span>🎯 ${interesseTxt}</span>
+        <span class="${atrasado?'fu-atrasado':''}">⏰ ${proxTxt}${atrasado?' ⚠️':''}</span>
+      </div>
+      <div class="row-card-actions">
+        <button class="btn btn-outline btn-sm" onclick="viewFollowup('${l.id}')">👁 Ver</button>
+        <button class="btn btn-outline btn-sm" onclick="novoFollowup('${l.id}')">✏ Editar</button>
+        <button class="btn btn-red btn-sm" onclick="delFollowup('${l.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewFollowup(id){
+  const l = db.followup.find(x=>x.id===id);
+  if(!l) return;
+  const statusColor = l.status==='quente'?'#e8305a':l.status==='frio'?'#6fa3ff':'#f5a623';
+  const prioColor = l.prioridade==='alta'?'#e8305a':l.prioridade==='baixa'?'#22c97a':'#f5a623';
+  let h = '<div id="pdf-printable" style="background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:20px;width:100%;max-width:740px;box-sizing:border-box;">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid #0E2432;gap:10px;">';
+  h += '<div style="flex:1;"><div style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:900;color:#0E2432;"><span style="color:#e8500a">FAS</span> Segurança Eletrônica</div>';
+  h += '<div style="font-size:10px;color:#374151;margin-top:4px;">Follow-up de Lead</div></div>';
+  h += '<div style="background:#0E2432;color:#fff;padding:8px 12px;border-radius:7px;text-align:center;flex-shrink:0;">';
+  h += '<div style="font-weight:800;font-size:11px;">'+(l.numero||'LEAD')+'</div>';
+  h += '<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">Contato: '+fmtDate(l.dataContato)+'</div></div></div>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">';
+  h += '<div style="background:'+statusColor+';color:#fff;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;">'+statusLabel(l.status)+'</div>';
+  h += '<div style="background:'+prioColor+';color:#fff;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;">'+prioridadeLabel(l.prioridade)+'</div>';
+  h += '</div>';
+  h += '<div style="margin-bottom:14px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
+  h += '<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
+  h += '<div style="font-size:13px;font-weight:700;color:#0E2432;">'+l.clienteNome+'</div>';
+  if(l.clienteTel) h += '<div style="font-size:11px;color:#374151;">Tel: '+l.clienteTel+'</div>';
+  if(l.clienteEndereco) h += '<div style="font-size:11px;color:#374151;">📍 '+l.clienteEndereco+'</div>';
+  h += '<div style="font-size:11px;color:#374151;">Tipo: '+(l.tipo||'—')+' • Origem: '+(l.origem||'—')+'</div>';
+  h += '</div></div>';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
+  h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">INTERESSE</div><div style="font-size:12px;color:#111;">'+(l.interesse||'—')+'</div></div>';
+  h += '<div style="flex:1;min-width:120px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">VALOR ORÇADO</div><div style="font-size:12px;color:#111;">'+fmtMoney(l.valor)+'</div></div>';
+  if(l.valorFechado) h += '<div style="flex:1;min-width:120px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">VALOR FECHADO</div><div style="font-size:12px;color:#22c97a;font-weight:700;">'+fmtMoney(l.valorFechado)+'</div></div>';
+  h += '</div>';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
+  h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">PRÓXIMO CONTATO</div><div style="font-size:12px;color:#111;">'+(l.proxData?fmtDate(l.proxData)+(l.proxHora?' às '+l.proxHora:''):'—')+'</div></div>';
+  h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">RESPONSÁVEL</div><div style="font-size:12px;color:#111;">'+(l.responsavel||'—')+'</div></div>';
+  h += '<div style="flex:1;min-width:120px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">CANAL</div><div style="font-size:12px;color:#111;">'+(l.canal||'—')+'</div></div>';
+  h += '</div>';
+  if(l.historico) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">HISTÓRICO DE CONTATO</div><div style="font-size:12px;color:#374151;line-height:1.6;padding:10px 12px;background:#f9fafb;border-radius:6px;white-space:pre-wrap;">'+l.historico+'</div></div>';
+  if(l.motivoPerda) h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">MOTIVO DE PERDA</div><div style="font-size:12px;color:#e8305a;font-weight:600;padding:10px 12px;background:#fff5f5;border-radius:6px;">'+l.motivoPerda+'</div></div>';
+  h += '</div>';
+  viewingDoc = {...l, type:'followup'};
+  document.getElementById('modal-view-title').textContent = '📞 ' + l.clienteNome;
+  document.getElementById('pdf-content').innerHTML = h;
+  const editBtn = document.getElementById('btn-editar-doc');
+  if(editBtn) editBtn.style.display = 'none';
+  openModal('modal-view');
+}
 
 // Salva imagem via GET (Apps Script aceita URLs longas no doGet)
 async function salvarImagemNuvem(chave, valor) {
@@ -1865,7 +2272,7 @@ function confirmarAcessoCliente() {
 function aplicarPermissoes() {
   const isCliente = currentUser && currentUser.role === 'cliente';
   // Esconder itens do menu para cliente
-  const paginasAdmin = ['clientes','produtos','config'];
+  const paginasAdmin = ['clientes','produtos','config','followup','ordens','laudos'];
   document.querySelectorAll('.nav-item').forEach(el => {
     const onclick = el.getAttribute('onclick') || '';
     const hidden = paginasAdmin.some(p => onclick.includes("'"+p+"'"));
