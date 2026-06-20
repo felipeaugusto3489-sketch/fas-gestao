@@ -984,6 +984,81 @@ function setSyncStatus(state, text) {
 }
 
 // ═══════════════════════════════════════════════════════
+// AUTO-SYNC — sincronização automática em segundo plano
+// ═══════════════════════════════════════════════════════
+let autoSyncTimer = null;
+let autoSyncInFlight = false;
+const AUTO_SYNC_INTERVAL_MS = 30000; // puxa dados novos a cada 30s (útil p/ múltiplos usuários)
+
+// Toast discreto específico para auto-sync (não compete com toasts de ação do usuário)
+function showSyncPulse(){
+  const dot = document.getElementById('sync-dot');
+  if(!dot) return;
+  dot.classList.add('syncing');
+  setTimeout(()=>{ if(dot.classList.contains('syncing')) dot.classList.remove('syncing'); }, 900);
+}
+
+// Chamado automaticamente logo após qualquer criação/edição/exclusão local.
+// Garante que o cache local está salvo e atualiza o indicador — o dado em si
+// já foi enviado à nuvem dentro da própria função que chamou (apiSave/apiDelete).
+function autoSyncAfterChange(){
+  saveLocalCache();
+  showSyncPulse();
+  if (API_URL) setSyncStatus('ok', 'Conectado ao Google Sheets — sincronizado');
+  // Reagenda o próximo pull em background para não competir com a ação que acabou de rodar
+  scheduleBackgroundSync(4000);
+}
+
+// Sincronização silenciosa: busca dados atualizados da nuvem sem travar a tela
+// (sem showLoading) — ideal para rodar periodicamente ou após uma mudança local.
+async function backgroundSync(){
+  if (!API_URL || autoSyncInFlight) return;
+  if (document.hidden) return; // não gasta requisição com a aba em segundo plano
+  autoSyncInFlight = true;
+  showSyncPulse();
+  try {
+    const [clientes, produtos, orcamentos, recibos, ordens, laudos, followup] = await Promise.all([
+      apiGetAll('Clientes'), apiGetAll('Produtos'),
+      apiGetAll('Orcamentos'), apiGetAll('Recibos'),
+      apiGetAll('Ordens'), apiGetAll('Laudos'), apiGetAll('Followup')
+    ]);
+    db.clientes   = clientes;
+    db.produtos   = produtos;
+    db.orcamentos = orcamentos;
+    db.recibos    = recibos;
+    db.ordens     = ordens;
+    db.laudos     = laudos;
+    db.followup   = followup;
+    saveLocalCache();
+    renderAll();
+    setSyncStatus('ok', 'Conectado ao Google Sheets');
+  } catch(e) {
+    // Falha silenciosa — não incomoda o usuário em sync automático de fundo
+    console.warn('Auto-sync em segundo plano falhou:', e.message);
+  } finally {
+    autoSyncInFlight = false;
+  }
+}
+
+function scheduleBackgroundSync(delayMs){
+  if (autoSyncTimer) clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(()=>{
+    backgroundSync();
+    startAutoSyncLoop();
+  }, delayMs != null ? delayMs : AUTO_SYNC_INTERVAL_MS);
+}
+
+function startAutoSyncLoop(){
+  if (autoSyncTimer) clearTimeout(autoSyncTimer);
+  autoSyncTimer = setInterval(backgroundSync, AUTO_SYNC_INTERVAL_MS);
+}
+
+// Sincroniza assim que a aba volta a ficar visível (usuário trocou de app e voltou)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && API_URL) backgroundSync();
+});
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
 async function init() {
@@ -996,6 +1071,7 @@ async function init() {
     if(window.innerWidth>768) document.getElementById('sidebar').classList.remove('mobile-hidden');
   }
   await syncAll();
+  startAutoSyncLoop();
 }
 
 function showSetupBanner() {
@@ -1201,6 +1277,7 @@ async function salvarConfig(){
   if (API_URL) {
     try { await api({ action:'saveConfig', config: JSON.stringify(cfg) }); } catch(e){}
   }
+  autoSyncAfterChange();
   showToast('Configurações salvas!');
 }
 
@@ -1224,6 +1301,7 @@ async function salvarCliente(){
     if(API_URL) await apiSave('Clientes', row);
     if(editingId){const i=db.clientes.findIndex(x=>x.id===editingId);db.clientes[i]=row;}else db.clientes.push(row);
     saveLocalCache();renderClientes();updateBadges();updateDashboard();
+    autoSyncAfterChange();
     showToast(editingId?'Cliente atualizado!':'Cliente salvo!');
   } catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
@@ -1236,7 +1314,7 @@ function renderClientes(filter=''){
 async function delCliente(id){
   if(!confirm('Excluir cliente?'))return;
   showLoading('Removendo...');
-  try { if(API_URL) await apiDelete('Clientes',id); db.clientes=db.clientes.filter(x=>x.id!==id);saveLocalCache();renderClientes();updateBadges();showToast('Cliente removido'); } catch(e){showToast('Erro: '+e.message);} finally{hideLoading();}
+  try { if(API_URL) await apiDelete('Clientes',id); db.clientes=db.clientes.filter(x=>x.id!==id);saveLocalCache();renderClientes();updateBadges();autoSyncAfterChange();showToast('Cliente removido'); } catch(e){showToast('Erro: '+e.message);} finally{hideLoading();}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1261,6 +1339,7 @@ async function salvarProduto(){
     if(API_URL) await apiSave('Produtos',row);
     if(editingId){const i=db.produtos.findIndex(x=>x.id===editingId);db.produtos[i]=row;}else db.produtos.push(row);
     saveLocalCache();renderProdutos();updateBadges();
+    autoSyncAfterChange();
     showToast(editingId?'Produto atualizado!':'Produto salvo!');
   } catch(e){showToast('Erro: '+e.message);} finally{hideLoading();}
 }
@@ -1273,7 +1352,7 @@ function renderProdutos(filter=''){
 async function delProduto(id){
   if(!confirm('Excluir produto?'))return;
   showLoading('Removendo...');
-  try{if(API_URL)await apiDelete('Produtos',id);db.produtos=db.produtos.filter(x=>x.id!==id);saveLocalCache();renderProdutos();updateBadges();showToast('Produto removido');}catch(e){showToast('Erro: '+e.message);}finally{hideLoading();}
+  try{if(API_URL)await apiDelete('Produtos',id);db.produtos=db.produtos.filter(x=>x.id!==id);saveLocalCache();renderProdutos();updateBadges();autoSyncAfterChange();showToast('Produto removido');}catch(e){showToast('Erro: '+e.message);}finally{hideLoading();}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1365,6 +1444,7 @@ async function salvarDocumento(){
     }
     editingId = null;
     saveLocalCache();renderOrcamentos();renderRecibos();updateBadges();updateDashboard();
+    autoSyncAfterChange();
     showToast((isEditing?'Orçamento atualizado: ':'Orçamento gerado: ')+doc.numero);
   } catch(e){showToast('Erro: '+e.message);} finally{hideLoading();}
 }
@@ -1385,7 +1465,7 @@ async function updOrcStatus(id,status){
   const o=db.orcamentos.find(x=>x.id===id);if(!o)return;
   o.status=status;
   try{if(API_URL)await apiSave('Orcamentos',o);}catch(e){}
-  saveLocalCache();renderOrcamentos();showToast('Status atualizado!');
+  saveLocalCache();renderOrcamentos();autoSyncAfterChange();showToast('Status atualizado!');
 }
 
 function renderRecibos(){
@@ -1401,7 +1481,7 @@ function renderRecibos(){
 async function delDoc(type,id){
   if(!confirm('Excluir documento?'))return;
   showLoading('Removendo...');
-  try{const sheet=type==='orcamento'?'Orcamentos':'Recibos';if(API_URL)await apiDelete(sheet,id);if(type==='orcamento')db.orcamentos=db.orcamentos.filter(x=>x.id!==id);else db.recibos=db.recibos.filter(x=>x.id!==id);saveLocalCache();renderOrcamentos();renderRecibos();updateBadges();updateDashboard();showToast('Removido!');}catch(e){showToast('Erro: '+e.message);}finally{hideLoading();}
+  try{const sheet=type==='orcamento'?'Orcamentos':'Recibos';if(API_URL)await apiDelete(sheet,id);if(type==='orcamento')db.orcamentos=db.orcamentos.filter(x=>x.id!==id);else db.recibos=db.recibos.filter(x=>x.id!==id);saveLocalCache();renderOrcamentos();renderRecibos();updateBadges();updateDashboard();autoSyncAfterChange();showToast('Removido!');}catch(e){showToast('Erro: '+e.message);}finally{hideLoading();}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1452,6 +1532,7 @@ async function salvarOS(){
     else db.ordens.push(os);
     editingId = null;
     saveLocalCache(); renderOrdens(); updateBadges(); updateDashboard();
+    autoSyncAfterChange();
     showToast((isEditing?'OS atualizada: ':'OS criada: ')+os.numero);
   }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
@@ -1472,7 +1553,7 @@ function renderOrdens(){
 async function delOS(id){
   if(!confirm('Excluir ordem de serviço?'))return;
   showLoading('Removendo...');
-  try{ if(API_URL) await apiDelete('Ordens', id); db.ordens=db.ordens.filter(x=>x.id!==id); saveLocalCache(); renderOrdens(); updateBadges(); showToast('Removida!'); }
+  try{ if(API_URL) await apiDelete('Ordens', id); db.ordens=db.ordens.filter(x=>x.id!==id); saveLocalCache(); renderOrdens(); updateBadges(); autoSyncAfterChange(); showToast('Removida!'); }
   catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
 function viewOS(id){
@@ -1565,6 +1646,7 @@ async function salvarLaudo(){
     else db.laudos.push(laudo);
     editingId = null;
     saveLocalCache(); renderLaudos(); updateBadges(); updateDashboard();
+    autoSyncAfterChange();
     showToast((isEditing?'Laudo atualizado: ':'Laudo criado: ')+laudo.numero);
   }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
@@ -1585,7 +1667,7 @@ function renderLaudos(){
 async function delLaudo(id){
   if(!confirm('Excluir laudo técnico?'))return;
   showLoading('Removendo...');
-  try{ if(API_URL) await apiDelete('Laudos', id); db.laudos=db.laudos.filter(x=>x.id!==id); saveLocalCache(); renderLaudos(); updateBadges(); showToast('Removido!'); }
+  try{ if(API_URL) await apiDelete('Laudos', id); db.laudos=db.laudos.filter(x=>x.id!==id); saveLocalCache(); renderLaudos(); updateBadges(); autoSyncAfterChange(); showToast('Removido!'); }
   catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
 function viewLaudo(id){
@@ -1941,6 +2023,7 @@ async function salvarFollowup(){
     else db.followup.push(lead);
     editingId = null;
     saveLocalCache(); renderFollowup(); updateBadges();
+    autoSyncAfterChange();
     showToast((isEditing?'Lead atualizado: ':'Lead criado: ')+lead.numero);
   }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
@@ -1948,7 +2031,7 @@ async function salvarFollowup(){
 async function delFollowup(id){
   if(!confirm('Excluir este lead?'))return;
   showLoading('Removendo...');
-  try{ if(API_URL) await apiDelete('Followup', id); db.followup=db.followup.filter(x=>x.id!==id); saveLocalCache(); renderFollowup(); updateBadges(); showToast('Lead removido!'); }
+  try{ if(API_URL) await apiDelete('Followup', id); db.followup=db.followup.filter(x=>x.id!==id); saveLocalCache(); renderFollowup(); updateBadges(); autoSyncAfterChange(); showToast('Lead removido!'); }
   catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
 
