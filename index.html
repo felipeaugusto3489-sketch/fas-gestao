@@ -155,13 +155,46 @@
 
   /* ── FORM ── */
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .form-grid > .form-group{min-width:0;}
   .form-group{display:flex;flex-direction:column;gap:5px;}
   .form-group.full{grid-column:1/-1;}
   label{font-size:10px;font-weight:700;color:var(--text-soft);letter-spacing:.06em;text-transform:uppercase;font-family:'Montserrat',sans-serif;}
-  input,select,textarea{background:var(--navy-light);border:1px solid var(--navy-border);color:var(--text);padding:9px 12px;border-radius:8px;font-family:'Open Sans',sans-serif;font-size:13px;transition:border-color .15s;width:100%;}
+  input,select,textarea{background:var(--navy-light);border:1px solid var(--navy-border);color:var(--text);padding:9px 12px;border-radius:8px;font-family:'Open Sans',sans-serif;font-size:13px;transition:border-color .15s;width:100%;box-sizing:border-box;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--orange);}
   select option{background:var(--navy-mid);}
   textarea{resize:vertical;min-height:68px;}
+
+  /* ── DATE & TIME: normaliza tamanho igual aos demais campos ── */
+  input[type="date"],input[type="time"],input[type="datetime-local"]{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+    -webkit-appearance:none;
+    appearance:none;
+    padding:9px 10px;
+    font-size:13px;
+    color-scheme:dark;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value{
+    text-align:left;
+    min-width:0;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator{
+    filter:invert(0.7);
+    padding:0;
+    margin-left:4px;
+    width:16px;
+    height:16px;
+    cursor:pointer;
+  }
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button{
+    display:none;
+  }
+
   .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--navy-border);flex-wrap:wrap;}
 
   /* ── SEARCH ── */
@@ -863,7 +896,7 @@
 // ═══════════════════════════════════════════════════════
 // CONFIGURAÇÃO — cole sua URL do Apps Script aqui:
 // ═══════════════════════════════════════════════════════
-const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5jejUiSX3LoDMPJWcemyVj8HVJoObq549yW7ZrUcbJsiheHolWKcz1eYEqfssdv8Z/exec';
+const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5G5TgBGAtp4oDevs0EkNA8wq52MlUJMde3zviCUo1y8COysISBqu2wfnaPYH3cdG1/exec';
 let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 
 // ═══════════════════════════════════════════════════════
