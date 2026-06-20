@@ -111,7 +111,9 @@
   /* ── CARDS ── */
   .card{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:12px;padding:18px;box-shadow:0 4px 20px rgba(0,0,0,.35);}
   .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
-  .stat-card{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .stat-card{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:12px;padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;}
+  .stat-card:hover{transform:translateY(-2px);border-color:var(--orange-bdr);box-shadow:0 6px 18px rgba(0,0,0,.35);}
+  .stat-card:active{transform:translateY(0);}
   .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--orange);}
   .stat-label{font-size:10px;color:var(--text-soft);font-weight:700;margin-bottom:6px;font-family:'Montserrat',sans-serif;letter-spacing:.06em;text-transform:uppercase;}
   .stat-value{font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:var(--white);}
@@ -438,11 +440,29 @@
       </div>
       <div style="display:none" id="setup-banner-area"></div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">👥 Clientes</div><div class="stat-value" id="stat-clientes">0</div><div class="stat-sub">cadastrados</div></div>
-        <div class="stat-card"><div class="stat-label">📦 Produtos</div><div class="stat-value" id="stat-produtos">0</div><div class="stat-sub">no catálogo</div></div>
-        <div class="stat-card"><div class="stat-label">📋 Orçamentos</div><div class="stat-value" id="stat-orcamentos">0</div><div class="stat-sub">emitidos</div></div>
-        <div class="stat-card"><div class="stat-label">🧾 Recibos</div><div class="stat-value" id="stat-recibos">0</div><div class="stat-sub">gerados</div></div>
+        <div class="stat-card" onclick="irPara('clientes')"><div class="stat-label">👥 Clientes</div><div class="stat-value" id="stat-clientes">0</div><div class="stat-sub">cadastrados →</div></div>
+        <div class="stat-card" onclick="irPara('produtos')"><div class="stat-label">📦 Produtos</div><div class="stat-value" id="stat-produtos">0</div><div class="stat-sub">no catálogo →</div></div>
+        <div class="stat-card" onclick="irPara('orcamentos')"><div class="stat-label">📋 Orçamentos</div><div class="stat-value" id="stat-orcamentos">0</div><div class="stat-sub">emitidos →</div></div>
+        <div class="stat-card" onclick="irPara('recibos')"><div class="stat-label">🧾 Recibos</div><div class="stat-value" id="stat-recibos">0</div><div class="stat-sub">gerados →</div></div>
+        <div class="stat-card" onclick="irPara('ordens')"><div class="stat-label">🛠 Ordens</div><div class="stat-value" id="stat-ordens">0</div><div class="stat-sub">de serviço →</div></div>
+        <div class="stat-card" onclick="irPara('laudos')"><div class="stat-label">📝 Laudos</div><div class="stat-value" id="stat-laudos">0</div><div class="stat-sub">técnicos →</div></div>
+        <div class="stat-card" onclick="irPara('followup')"><div class="stat-label">📞 Leads</div><div class="stat-value" id="stat-followup">0</div><div class="stat-sub">em acompanhamento →</div></div>
       </div>
+
+      <div class="card" style="margin-bottom:16px;cursor:pointer;" onclick="irPara('followup')">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:var(--white);letter-spacing:.02em;">📞 RESUMO DE FOLLOW-UP</div>
+          <span style="font-size:11px;color:var(--orange-h);font-weight:600;">Ver todos →</span>
+        </div>
+        <div class="stats-grid" style="margin-bottom:0;" id="dash-followup-summary">
+          <div class="stat-card" style="cursor:default;padding:12px;" onclick="event.stopPropagation()"><div class="stat-label">🔥 Quentes</div><div class="stat-value" id="dash-fu-quente" style="font-size:20px;color:#ff5c7a">0</div></div>
+          <div class="stat-card" style="cursor:default;padding:12px;" onclick="event.stopPropagation()"><div class="stat-label">🌡 Mornos</div><div class="stat-value" id="dash-fu-morno" style="font-size:20px;color:var(--amber)">0</div></div>
+          <div class="stat-card" style="cursor:default;padding:12px;" onclick="event.stopPropagation()"><div class="stat-label">❄ Frios</div><div class="stat-value" id="dash-fu-frio" style="font-size:20px;color:#6fa3ff">0</div></div>
+          <div class="stat-card" style="cursor:default;padding:12px;" onclick="event.stopPropagation()"><div class="stat-label">⏰ Atrasados</div><div class="stat-value" id="dash-fu-atrasado" style="font-size:20px;color:var(--orange-h)">0</div></div>
+        </div>
+        <div id="dash-followup-list" style="margin-top:12px;"></div>
+      </div>
+
       <div class="card"><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:var(--white);margin-bottom:12px;letter-spacing:.02em;">ATIVIDADE RECENTE</div><div id="dash-activity" style="color:var(--text-soft);font-size:13px">Carregando...</div></div>
     </div>
 
@@ -1209,6 +1229,18 @@ function _goToPage(page,el){
   if(page==='followup')renderFollowup();
 }
 
+// Navegação a partir de elementos clicáveis fora do menu lateral (ex: cards do Dashboard)
+function irPara(page){
+  const cur=pageHistory[pageHistory.length-1];
+  if(cur!==page) pageHistory.push(page);
+  // Encontra o nav-item correspondente para marcar como ativo
+  let navEl = null;
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if((n.getAttribute('onclick')||'').includes(`'${page}'`)) navEl = n;
+  });
+  _goToPage(page, navEl);
+}
+
 // ═══════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════
@@ -1231,7 +1263,10 @@ function isMobile(){return window.innerWidth<=768;}
 
 function updateBadges(){['clientes','produtos','orcamentos','recibos','ordens','laudos','followup'].forEach(k=>{const el=document.getElementById('badge-'+k); if(el) el.textContent=db[k].length;});}
 function updateDashboard(){
-  ['clientes','produtos','orcamentos','recibos'].forEach(k=>document.getElementById('stat-'+k).textContent=db[k].length);
+  ['clientes','produtos','orcamentos','recibos','ordens','laudos','followup'].forEach(k=>{
+    const el=document.getElementById('stat-'+k);
+    if(el) el.textContent=(db[k]||[]).length;
+  });
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const acts=[];
   [...db.orcamentos.slice(-4).reverse()].forEach(o=>acts.push(`📋 ${o.numero} — ${o.clienteNome} — <b style="color:var(--orange-h)">${fmtMoney(o.total)}</b>`));
@@ -1239,6 +1274,41 @@ function updateDashboard(){
   [...(db.ordens||[]).slice(-3).reverse()].forEach(o=>acts.push(`🛠 ${o.numero} — ${o.clienteNome} — <b style="color:#6fa3ff">${o.status}</b>`));
   [...(db.laudos||[]).slice(-3).reverse()].forEach(l=>acts.push(`📝 ${l.numero} — ${l.clienteNome} — <b style="color:var(--amber)">${l.conclusao}</b>`));
   document.getElementById('dash-activity').innerHTML=acts.length?acts.map(a=>`<div style="padding:9px 0;border-bottom:1px solid var(--navy-border);font-size:12px">${a}</div>`).join(''):'<p>Nenhuma atividade ainda.</p>';
+  updateDashboardFollowup();
+}
+
+function updateDashboardFollowup(){
+  const all = db.followup || [];
+  const elQuente = document.getElementById('dash-fu-quente');
+  if(!elQuente) return; // dashboard pode não estar montado ainda
+  document.getElementById('dash-fu-quente').textContent = all.filter(l=>l.status==='quente').length;
+  document.getElementById('dash-fu-morno').textContent = all.filter(l=>l.status==='morno').length;
+  document.getElementById('dash-fu-frio').textContent = all.filter(l=>l.status==='frio').length;
+  const atrasados = all.filter(l=>{ const d=diasAteHoje(l.proxData); return d!==null && d<0; });
+  document.getElementById('dash-fu-atrasado').textContent = atrasados.length;
+
+  // Lista rápida dos próximos follow-ups (ordenados por data, mais urgentes primeiro)
+  const proximos = all
+    .filter(l=>l.proxData && l.status!=='frio')
+    .map(l=>({...l, dias: diasAteHoje(l.proxData)}))
+    .sort((a,b)=>(a.dias??999)-(b.dias??999))
+    .slice(0,4);
+
+  const listEl = document.getElementById('dash-followup-list');
+  if(!listEl) return;
+  if(!proximos.length){
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text-soft);padding:6px 0;">Nenhum follow-up agendado.</div>';
+    return;
+  }
+  listEl.innerHTML = proximos.map(l=>{
+    const atrasado = l.dias!==null && l.dias<0;
+    const prazoTxt = l.dias===0 ? 'Hoje' : l.dias===1 ? 'Amanhã' : atrasado ? `Atrasado há ${Math.abs(l.dias)}d` : `Em ${l.dias}d`;
+    const cor = atrasado ? 'var(--orange-h)' : l.dias<=1 ? 'var(--amber)' : 'var(--text-soft)';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--navy-border);font-size:12px;">
+      <span><span class="fu-badge-status fu-badge-${l.status}" style="margin-right:6px;">${statusLabel(l.status)}</span>${l.clienteNome}</span>
+      <span style="color:${cor};font-weight:600;flex-shrink:0;margin-left:8px;">${prazoTxt}</span>
+    </div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2434,6 +2504,10 @@ function sair() {
 // ── START ──
 window.addEventListener('resize',()=>{if(docItems.length)renderDocItems();});
 carregarImagensSalvas(); // carrega logo/assinatura do cache local e depois da nuvem
+
+// Inicializa o sistema e sincroniza automaticamente assim que a página carrega
+// (cobre o acesso direto pelo link principal, sem precisar de login)
+init();
 </script>
 </body>
 </html>
