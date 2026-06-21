@@ -631,6 +631,7 @@
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
             <button class="btn btn-primary btn-sm" onclick="testarConexao()">🔌 Testar Conexão</button>
             <button class="btn btn-outline btn-sm" onclick="inicializarPlanilha()">🗂 Criar Abas na Planilha</button>
+            <button class="btn btn-outline btn-sm" onclick="abrirAgendaFAS()">📅 Abrir Agenda da FAS</button>
           </div>
           <div id="conn-status" style="margin-top:10px;font-size:12px;color:var(--text-soft)"></div>
         </div>
@@ -983,7 +984,7 @@
 // ═══════════════════════════════════════════════════════
 // CONFIGURAÇÃO — cole sua URL do Apps Script aqui:
 // ═══════════════════════════════════════════════════════
-const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5jejUiSX3LoDMPJWcemyVj8HVJoObq549yW7ZrUcbJsiheHolWKcz1eYEqfssdv8Z/exec';
+const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5G5TgBGAtp4oDevs0EkNA8wq52MlUJMde3zviCUo1y8COysISBqu2wfnaPYH3cdG1/exec';
 let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 
 // ═══════════════════════════════════════════════════════
@@ -1238,13 +1239,40 @@ async function testarConexao() {
   showLoading('Testando conexão...');
   try {
     await api({ action:'getAll', sheet:'Clientes' });
-    document.getElementById('conn-status').innerHTML = '<span style="color:var(--green)">✓ Conexão OK! URL salva.</span>';
+    let versaoTxt = '';
+    try {
+      const ping = await api({ action:'ping' });
+      versaoTxt = ping.versao ? ` (Apps Script versão: ${ping.versao})` : ' <span style="color:var(--amber)">— Apps Script desatualizado, sem campo de versão. Republique o código!</span>';
+    } catch(e) {}
+    document.getElementById('conn-status').innerHTML = `<span style="color:var(--green)">✓ Conexão OK! URL salva.${versaoTxt}</span>`;
     setSyncStatus('ok', 'Conectado ao Google Sheets');
     showToast('Conexão funcionando!');
   } catch(e) {
     document.getElementById('conn-status').innerHTML = `<span style="color:var(--red)">✗ Erro: ${e.message}</span>`;
     showToast('Falha na conexão');
   } finally { hideLoading(); }
+}
+
+// Abre a Agenda dedicada da FAS no Google Calendar (cria automaticamente se não existir)
+async function abrirAgendaFAS(){
+  if (!API_URL) { showToast('Configure a URL do Apps Script primeiro'); return; }
+  showLoading('Localizando agenda da FAS...');
+  try {
+    const r = await api({ action:'getCalendarInfo' });
+    hideLoading();
+    if (!r.ok || !r.calendarId) {
+      showToast('Não foi possível obter a agenda. Atualize o Apps Script.');
+      return;
+    }
+    const url = 'https://calendar.google.com/calendar/u/0?cid=' + encodeURIComponent(btoa(r.calendarId).replace(/=+$/,''));
+    // Fallback mais confiável: abrir direto pelo ID, que o Google aceita como link de inscrição
+    const urlDireta = 'https://calendar.google.com/calendar/embed?src=' + encodeURIComponent(r.calendarId);
+    window.open(urlDireta, '_blank');
+    showToast('Abrindo agenda: ' + r.nome);
+  } catch(e) {
+    hideLoading();
+    showToast('Erro: ' + e.message + ' — pode ser que o Apps Script ainda não tenha sido atualizado.');
+  }
 }
 
 function renderAll() {
