@@ -257,6 +257,22 @@
   .pdf-footer-logo{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#0E2432;}
   .pdf-footer-logo span{color:#e8500a;}
 
+  /* ── AGENDA ── */
+  .agenda-dia{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:12px;padding:14px;margin-bottom:10px;}
+  .agenda-dia.hoje{border-color:var(--orange-bdr);background:var(--orange-dim);}
+  .agenda-dia-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--navy-border);}
+  .agenda-dia-nome{font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:var(--white);}
+  .agenda-dia-data{font-size:11px;color:var(--text-soft);}
+  .agenda-evento{display:flex;gap:10px;padding:9px 10px;border-radius:8px;margin-bottom:6px;background:var(--navy-light);border-left:3px solid var(--orange);align-items:flex-start;}
+  .agenda-evento.gcal{border-left-color:#6fa3ff;}
+  .agenda-evento:last-child{margin-bottom:0;}
+  .agenda-evento-hora{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--orange-h);min-width:42px;flex-shrink:0;}
+  .agenda-evento.gcal .agenda-evento-hora{color:#6fa3ff;}
+  .agenda-evento-info{flex:1;min-width:0;}
+  .agenda-evento-titulo{font-size:12px;font-weight:600;color:var(--text);}
+  .agenda-evento-sub{font-size:11px;color:var(--text-soft);margin-top:2px;}
+  .agenda-vazio{font-size:12px;color:var(--text-soft);padding:8px 0;text-align:center;}
+
   /* ── FOLLOW-UP ── */
   .fu-check{display:flex;align-items:center;gap:6px;background:var(--navy-light);border:1px solid var(--navy-border);padding:8px 12px;border-radius:8px;font-size:12px;color:var(--text);cursor:pointer;transition:all .15s;user-select:none;}
   .fu-check:has(input:checked){background:var(--orange-dim);border-color:var(--orange-bdr);color:var(--orange-h);font-weight:600;}
@@ -407,6 +423,10 @@
         <div class="nav-item" onclick="showPage('followup',this)">
           <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
           <span class="nav-text">Follow-up</span><span class="nav-badge" id="badge-followup">0</span>
+        </div>
+        <div class="nav-item" onclick="showPage('agenda',this)">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span class="nav-text">Agenda</span>
         </div>
       </div>
       <div class="nav-group">
@@ -561,6 +581,37 @@
         <div><table><thead><tr><th>Cliente</th><th>Status</th><th>Prioridade</th><th>Próximo Contato</th><th>Interesse</th><th>Ações</th></tr></thead>
         <tbody id="tbody-followup"><tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📞</div>Carregando...</div></td></tr></tbody></table></div>
         <div class="row-card" id="cards-followup"></div>
+      </div>
+    </div>
+
+    <!-- AGENDA -->
+    <div class="page" id="page-agenda">
+      <button class="btn-back" onclick="voltarPagina()">← Voltar</button>
+      <div class="page-header">
+        <div class="page-title">📅 Agenda</div>
+        <button class="btn btn-outline btn-sm" onclick="carregarAgenda()">🔄 Atualizar</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="navegarAgenda(-1)">← Anterior</button>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--white);flex:1;text-align:center;min-width:160px;" id="agenda-titulo-periodo">Esta semana</div>
+        <button class="btn btn-outline btn-sm" onclick="navegarAgenda(1)">Próxima →</button>
+        <button class="btn btn-outline btn-sm" onclick="irParaHoje()">Hoje</button>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:var(--orange);display:inline-block;"></span> Ordem de Serviço (sistema)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#6fa3ff;display:inline-block;"></span> Evento do Google Agenda</span>
+        </div>
+      </div>
+
+      <div id="agenda-dias-container"></div>
+
+      <div class="card" style="margin-top:16px;background:rgba(111,163,255,.06);border-color:rgba(111,163,255,.25);">
+        <div style="font-size:12px;color:var(--text-soft);line-height:1.6;">
+          ℹ️ Ordens de Serviço com status <b style="color:var(--orange-h)">Aprovada</b> ou <b style="color:var(--orange-h)">Em Andamento</b>, com data e horário definidos, reservam automaticamente um horário no Google Agenda. Ao cancelar, concluir ou excluir a OS, o horário é liberado.
+        </div>
       </div>
     </div>
 
@@ -731,12 +782,28 @@
       <div class="form-group"><label>Status</label>
         <select id="os-status">
           <option value="Aberta">Aberta</option>
+          <option value="Aprovada">Aprovada</option>
           <option value="Em Andamento">Em Andamento</option>
           <option value="Concluída">Concluída</option>
           <option value="Cancelada">Cancelada</option>
         </select>
       </div>
       <div class="form-group"><label>Horário Previsto</label><input id="os-horario" type="time"></div>
+      <div class="form-group"><label>Duração Estimada</label>
+        <select id="os-duracao">
+          <option value="30">30 minutos</option>
+          <option value="60" selected>1 hora</option>
+          <option value="90">1h30</option>
+          <option value="120">2 horas</option>
+          <option value="180">3 horas</option>
+          <option value="240">4 horas</option>
+          <option value="480">Dia inteiro</option>
+        </select>
+      </div>
+      <div class="form-group full" style="background:var(--navy-light);border:1px solid var(--navy-border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="os-sync-agenda" checked style="width:16px;height:16px;accent-color:var(--orange);flex-shrink:0;">
+        <label for="os-sync-agenda" style="text-transform:none;font-weight:500;font-size:12px;color:var(--text);cursor:pointer;">📅 Reservar automaticamente no Google Agenda quando Status = Aprovada ou Em Andamento</label>
+      </div>
       <div class="form-group full"><label>Endereço do Serviço</label><input id="os-endereco" placeholder="Local onde o serviço será realizado"></div>
       <div class="form-group full"><label>Descrição do Serviço *</label><textarea id="os-descricao" placeholder="Detalhe o que será executado..."></textarea></div>
       <div class="form-group full"><label>Materiais Utilizados</label><textarea id="os-materiais" placeholder="Liste os materiais/equipamentos usados..."></textarea></div>
@@ -1227,6 +1294,7 @@ function _goToPage(page,el){
   if(page==='ordens')renderOrdens();
   if(page==='laudos')renderLaudos();
   if(page==='followup')renderFollowup();
+  if(page==='agenda')carregarAgenda();
 }
 
 // Navegação a partir de elementos clicáveis fora do menu lateral (ex: cards do Dashboard)
@@ -1567,12 +1635,18 @@ function novaOS(id=null){
   document.getElementById('os-tecnico').value = os ? os.tecnico||'' : '';
   document.getElementById('os-status').value = os ? os.status : 'Aberta';
   document.getElementById('os-horario').value = os ? os.horario||'' : '';
+  document.getElementById('os-duracao').value = os ? (os.duracao||'60') : '60';
+  document.getElementById('os-sync-agenda').checked = true;
   document.getElementById('os-endereco').value = os ? os.endereco||'' : '';
   document.getElementById('os-descricao').value = os ? os.descricao||'' : '';
   document.getElementById('os-materiais').value = os ? os.materiais||'' : '';
   document.getElementById('os-obs').value = os ? os.obs||'' : '';
   openModal('modal-os');
 }
+
+// Status de OS que devem manter um horário reservado na agenda
+const STATUS_OS_AGENDA = ['Aprovada', 'Em Andamento'];
+
 async function salvarOS(){
   const clienteId = document.getElementById('os-cliente').value;
   const descricao = document.getElementById('os-descricao').value.trim();
@@ -1581,6 +1655,8 @@ async function salvarOS(){
   const cliente = db.clientes.find(c=>c.id===clienteId);
   const isEditing = !!editingId;
   const existing = isEditing ? db.ordens.find(x=>x.id===editingId) : null;
+  const novoStatus = document.getElementById('os-status').value;
+  const sincronizarAgenda = document.getElementById('os-sync-agenda').checked;
   const os = {
     id: isEditing ? editingId : genId(),
     numero: isEditing && existing ? existing.numero : genNum('OS', db.ordens),
@@ -1588,24 +1664,74 @@ async function salvarOS(){
     data: document.getElementById('os-data').value,
     tipo: document.getElementById('os-tipo').value,
     tecnico: document.getElementById('os-tecnico').value,
-    status: document.getElementById('os-status').value,
+    status: novoStatus,
     horario: document.getElementById('os-horario').value,
+    duracao: document.getElementById('os-duracao').value,
     endereco: document.getElementById('os-endereco').value,
     descricao, materiais: document.getElementById('os-materiais').value,
     obs: document.getElementById('os-obs').value,
+    eventoCalendarId: existing ? (existing.eventoCalendarId || '') : '',
   };
   closeModal('modal-os');
   showLoading(isEditing?'Atualizando OS...':'Salvando OS...');
   try{
+    // Sincroniza com o Google Agenda ANTES de salvar a planilha, para já gravar o eventoCalendarId
+    if (API_URL && sincronizarAgenda) {
+      const deveAgendar = STATUS_OS_AGENDA.includes(novoStatus) && os.data && os.horario;
+      if (deveAgendar) {
+        showLoading('Reservando horário na agenda...');
+        const r = await criarEventoAgendaOS(os);
+        if (r && r.eventId) os.eventoCalendarId = r.eventId;
+      } else if (os.eventoCalendarId && (novoStatus === 'Cancelada' || novoStatus === 'Concluída' || !os.horario)) {
+        // Se saiu do status "agendável" (cancelou, concluiu ou removeu horário), libera o horário
+        await removerEventoAgendaOS(os.eventoCalendarId);
+        os.eventoCalendarId = '';
+      }
+    }
     if(API_URL) await apiSave('Ordens', os);
     if(isEditing){ const i=db.ordens.findIndex(x=>x.id===editingId); if(i>=0) db.ordens[i]=os; else db.ordens.push(os); }
     else db.ordens.push(os);
     editingId = null;
     saveLocalCache(); renderOrdens(); updateBadges(); updateDashboard();
     autoSyncAfterChange();
-    showToast((isEditing?'OS atualizada: ':'OS criada: ')+os.numero);
+    const agendado = os.eventoCalendarId ? ' 📅 Reservado na agenda!' : '';
+    showToast((isEditing?'OS atualizada: ':'OS criada: ')+os.numero+agendado);
   }catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
+
+// Cria/atualiza o evento no Google Calendar correspondente a uma OS
+async function criarEventoAgendaOS(os){
+  if (!API_URL) return null;
+  try {
+    const evento = {
+      osId: os.id,
+      numero: os.numero,
+      clienteNome: os.clienteNome,
+      clienteTel: os.clienteTel,
+      endereco: os.endereco,
+      tipo: os.tipo,
+      descricao: os.descricao,
+      data: os.data,
+      horario: os.horario,
+      duracaoMin: os.duracao,
+      eventoCalendarId: os.eventoCalendarId || '',
+    };
+    const r = await api({ action:'criarEventoOS', evento: JSON.stringify(evento) });
+    return r;
+  } catch(e) {
+    console.warn('Falha ao sincronizar com Google Agenda:', e.message);
+    showToast('OS salva, mas houve erro ao reservar na agenda');
+    return null;
+  }
+}
+
+// Remove o evento do Google Calendar vinculado a uma OS
+async function removerEventoAgendaOS(eventId){
+  if (!API_URL || !eventId) return;
+  try { await api({ action:'removerEventoOS', eventId }); }
+  catch(e) { console.warn('Falha ao remover evento da agenda:', e.message); }
+}
+
 function renderOrdens(){
   const tbody=document.getElementById('tbody-ordens'), cards=document.getElementById('cards-ordens');
   if(!tbody) return;
@@ -1621,9 +1747,14 @@ function renderOrdens(){
   if(cards) cards.innerHTML=list.map(o=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${o.numero}</span><span class="badge ${statusBadge(o.status)}">${o.status}</span></div><div class="row-card-meta"><span>👤 ${o.clienteNome}</span><span>🔧 ${o.tipo}</span><span>📅 ${fmtDate(o.data)}</span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></div>`).join('');
 }
 async function delOS(id){
-  if(!confirm('Excluir ordem de serviço?'))return;
+  if(!confirm('Excluir ordem de serviço? O horário reservado na agenda também será liberado.'))return;
   showLoading('Removendo...');
-  try{ if(API_URL) await apiDelete('Ordens', id); db.ordens=db.ordens.filter(x=>x.id!==id); saveLocalCache(); renderOrdens(); updateBadges(); autoSyncAfterChange(); showToast('Removida!'); }
+  try{
+    const os = db.ordens.find(x=>x.id===id);
+    if(os && os.eventoCalendarId) await removerEventoAgendaOS(os.eventoCalendarId);
+    if(API_URL) await apiDelete('Ordens', id);
+    db.ordens=db.ordens.filter(x=>x.id!==id); saveLocalCache(); renderOrdens(); updateBadges(); autoSyncAfterChange(); showToast('Removida!');
+  }
   catch(e){ showToast('Erro: '+e.message); } finally{ hideLoading(); }
 }
 function viewOS(id){
@@ -2234,6 +2365,133 @@ function viewFollowup(id){
   openModal('modal-view');
 }
 
+// ═══════════════════════════════════════════════════════
+// AGENDA — combina Ordens de Serviço + Google Calendar
+// ═══════════════════════════════════════════════════════
+let agendaSemanaOffset = 0; // 0 = semana atual, -1 = anterior, +1 = próxima
+let agendaEventosGCal = []; // cache dos eventos vindos do Google Calendar
+
+function inicioDaSemana(date){
+  const d = new Date(date);
+  const dia = d.getDay(); // 0 = domingo
+  d.setDate(d.getDate() - dia);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function formatarDataISO(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+async function carregarAgenda(){
+  const hoje = new Date();
+  hoje.setDate(hoje.getDate() + agendaSemanaOffset * 7);
+  const inicioSemana = inicioDaSemana(hoje);
+  const fimSemana = new Date(inicioSemana);
+  fimSemana.setDate(fimSemana.getDate() + 6);
+
+  document.getElementById('agenda-titulo-periodo').textContent =
+    agendaSemanaOffset === 0
+      ? 'Esta semana — ' + fmtDate(formatarDataISO(inicioSemana)) + ' a ' + fmtDate(formatarDataISO(fimSemana))
+      : fmtDate(formatarDataISO(inicioSemana)) + ' a ' + fmtDate(formatarDataISO(fimSemana));
+
+  // Busca eventos do Google Calendar para a semana, se houver conexão
+  agendaEventosGCal = [];
+  if (API_URL) {
+    try {
+      const r = await api({
+        action: 'getEventosAgenda',
+        dataInicio: formatarDataISO(inicioSemana),
+        dataFim: formatarDataISO(fimSemana),
+      });
+      if (r.ok) agendaEventosGCal = r.data || [];
+    } catch(e) {
+      console.warn('Não foi possível carregar Google Agenda:', e.message);
+    }
+  }
+
+  renderAgendaSemana(inicioSemana);
+}
+
+function navegarAgenda(direcao){
+  agendaSemanaOffset += direcao;
+  carregarAgenda();
+}
+
+function irParaHoje(){
+  agendaSemanaOffset = 0;
+  carregarAgenda();
+}
+
+function renderAgendaSemana(inicioSemana){
+  const container = document.getElementById('agenda-dias-container');
+  if (!container) return;
+
+  const diasNomes = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const hojeStr = formatarDataISO(new Date());
+
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const dia = new Date(inicioSemana);
+    dia.setDate(dia.getDate() + i);
+    const diaStr = formatarDataISO(dia);
+    const isHoje = diaStr === hojeStr;
+
+    // Ordens de Serviço agendadas nesse dia (com horário e status que reserva agenda)
+    const osDoDia = db.ordens
+      .filter(o => String(o.data).split('T')[0] === diaStr && o.horario && STATUS_OS_AGENDA.includes(o.status))
+      .sort((a,b) => (a.horario||'').localeCompare(b.horario||''));
+
+    // Eventos do Google Calendar nesse dia que NÃO vieram de uma OS do sistema
+    // (para não duplicar visualmente o mesmo compromisso)
+    const idsEventosOS = new Set(db.ordens.map(o=>o.eventoCalendarId).filter(Boolean));
+    const gcalDoDia = agendaEventosGCal.filter(ev => {
+      if (idsEventosOS.has(ev.id)) return false;
+      const dataEv = ev.inicio ? ev.inicio.split('T')[0] : '';
+      return dataEv === diaStr;
+    }).sort((a,b)=>(a.inicio||'').localeCompare(b.inicio||''));
+
+    const totalEventos = osDoDia.length + gcalDoDia.length;
+
+    html += `<div class="agenda-dia ${isHoje?'hoje':''}">
+      <div class="agenda-dia-header">
+        <span class="agenda-dia-nome">${diasNomes[i]}${isHoje?' • Hoje':''}</span>
+        <span class="agenda-dia-data">${fmtDate(diaStr)}</span>
+      </div>`;
+
+    if (totalEventos === 0) {
+      html += '<div class="agenda-vazio">Sem compromissos</div>';
+    } else {
+      osDoDia.forEach(o => {
+        html += `<div class="agenda-evento" onclick="viewOS('${o.id}')" style="cursor:pointer;">
+          <div class="agenda-evento-hora">${o.horario}</div>
+          <div class="agenda-evento-info">
+            <div class="agenda-evento-titulo">🛠 ${o.tipo} — ${o.clienteNome}</div>
+            <div class="agenda-evento-sub">${o.numero} • ${o.status}${o.endereco?' • '+o.endereco:''}</div>
+          </div>
+        </div>`;
+      });
+      gcalDoDia.forEach(ev => {
+        const hora = ev.diaTodo ? 'Dia todo' : new Date(ev.inicio).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+        html += `<div class="agenda-evento gcal">
+          <div class="agenda-evento-hora">${hora}</div>
+          <div class="agenda-evento-info">
+            <div class="agenda-evento-titulo">📅 ${ev.titulo}</div>
+            ${ev.local?`<div class="agenda-evento-sub">${ev.local}</div>`:''}
+          </div>
+        </div>`;
+      });
+    }
+
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
 // Salva imagem via GET (Apps Script aceita URLs longas no doGet)
 async function salvarImagemNuvem(chave, valor) {
   if (!API_URL) return;
@@ -2458,7 +2716,7 @@ function confirmarAcessoCliente() {
 function aplicarPermissoes() {
   const isCliente = currentUser && currentUser.role === 'cliente';
   // Esconder itens do menu para cliente
-  const paginasAdmin = ['clientes','produtos','config','followup','ordens','laudos'];
+  const paginasAdmin = ['clientes','produtos','config','followup','ordens','laudos','agenda'];
   document.querySelectorAll('.nav-item').forEach(el => {
     const onclick = el.getAttribute('onclick') || '';
     const hidden = paginasAdmin.some(p => onclick.includes("'"+p+"'"));
