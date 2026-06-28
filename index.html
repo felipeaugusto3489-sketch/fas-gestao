@@ -483,6 +483,15 @@
         <div id="dash-followup-list" style="margin-top:12px;"></div>
       </div>
 
+      <!-- AGENDA DO DIA — Dashboard -->
+      <div class="card" style="margin-bottom:16px;cursor:pointer;" onclick="irPara('agenda')">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:var(--white);letter-spacing:.02em;">📅 AGENDA DE HOJE</div>
+          <span style="font-size:11px;color:var(--orange-h);font-weight:600;">Ver agenda →</span>
+        </div>
+        <div id="dash-agenda-hoje" style="color:var(--text-soft);font-size:12px;">Carregando...</div>
+      </div>
+
       <div class="card"><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:var(--white);margin-bottom:12px;letter-spacing:.02em;">ATIVIDADE RECENTE</div><div id="dash-activity" style="color:var(--text-soft);font-size:13px">Carregando...</div></div>
     </div>
 
@@ -716,9 +725,18 @@
       <div class="form-group"><label>Email</label><input id="cli-email" type="email"></div>
       <div class="form-group"><label>Telefone / WhatsApp</label><input id="cli-tel" placeholder="(17) 99999-9999"></div>
       <div class="form-group"><label>CPF / CNPJ</label><input id="cli-doc"></div>
-      <div class="form-group"><label>Cidade</label><input id="cli-cidade" placeholder="São José do Rio Preto"></div>
+      <div class="form-group">
+        <label>CEP</label>
+        <div style="display:flex;gap:6px;">
+          <input id="cli-cep" placeholder="00000-000" maxlength="9" oninput="mascararCep(this)" style="flex:1;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="buscarCep()" style="flex-shrink:0;white-space:nowrap;">🔍 Buscar</button>
+        </div>
+        <span id="cli-cep-status" style="font-size:10px;color:var(--text-soft);margin-top:2px;"></span>
+      </div>
       <div class="form-group"><label>Estado</label><input id="cli-estado" placeholder="SP"></div>
-      <div class="form-group full"><label>Endereço</label><input id="cli-endereco"></div>
+      <div class="form-group full"><label>Endereço (Rua, Nº, Bairro)</label><input id="cli-endereco" placeholder="Preenchido ao buscar CEP"></div>
+      <div class="form-group"><label>Cidade</label><input id="cli-cidade" placeholder="São José do Rio Preto"></div>
+      <div class="form-group"><label>Complemento</label><input id="cli-complemento" placeholder="Apto, Bloco, etc."></div>
       <div class="form-group full"><label>Observações</label><textarea id="cli-obs"></textarea></div>
     </div>
     <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="salvarCliente()">Salvar</button></div>
@@ -805,7 +823,15 @@
         <input type="checkbox" id="os-sync-agenda" checked style="width:16px;height:16px;accent-color:var(--orange);flex-shrink:0;">
         <label for="os-sync-agenda" style="text-transform:none;font-weight:500;font-size:12px;color:var(--text);cursor:pointer;">📅 Reservar automaticamente no Google Agenda quando Status = Aprovada ou Em Andamento</label>
       </div>
-      <div class="form-group full"><label>Endereço do Serviço</label><input id="os-endereco" placeholder="Local onde o serviço será realizado"></div>
+      <div class="form-group full">
+        <label>Endereço do Cliente (cadastro)</label>
+        <input id="os-endereco-cliente" readonly style="opacity:.75;cursor:default;" placeholder="Selecione um cliente acima">
+      </div>
+      <div class="form-group full">
+        <label>📍 Endereço de Execução do Serviço</label>
+        <input id="os-endereco" placeholder="Deixe em branco para usar o endereço do cliente">
+        <span style="font-size:10px;color:var(--text-soft);margin-top:3px;">Se diferente do endereço de cadastro. Este campo vai para a OS e para a agenda.</span>
+      </div>
       <div class="form-group full"><label>Descrição do Serviço *</label><textarea id="os-descricao" placeholder="Detalhe o que será executado..."></textarea></div>
       <div class="form-group full"><label>Materiais Utilizados</label><textarea id="os-materiais" placeholder="Liste os materiais/equipamentos usados..."></textarea></div>
       <div class="form-group full"><label>Observações</label><textarea id="os-obs" placeholder="Observações gerais..."></textarea></div>
@@ -819,7 +845,7 @@
   <div class="modal modal-lg">
     <div class="modal-header"><div class="modal-title" id="modal-laudo-title">Novo Laudo Técnico</div><button class="close-btn" onclick="closeModal('modal-laudo')">✕</button></div>
     <div class="form-grid" style="margin-bottom:12px">
-      <div class="form-group"><label>Cliente *</label><select id="laudo-cliente"><option value="">Selecionar...</option></select></div>
+      <div class="form-group"><label>Cliente *</label><select id="laudo-cliente" onchange="onLaudoClienteSelect(this.value)"><option value="">Selecionar...</option></select></div>
       <div class="form-group"><label>Data da Vistoria</label><input id="laudo-data" type="date"></div>
       <div class="form-group"><label>Técnico Responsável</label><input id="laudo-tecnico" placeholder="Nome do técnico"></div>
       <div class="form-group"><label>Tipo de Vistoria</label>
@@ -831,7 +857,11 @@
           <option value="Outro">Outro</option>
         </select>
       </div>
-      <div class="form-group full"><label>Endereço Vistoriado</label><input id="laudo-endereco" placeholder="Local da vistoria"></div>
+      <div class="form-group full">
+        <label>Endereço Vistoriado</label>
+        <input id="laudo-endereco" placeholder="Preenchido automaticamente ao selecionar cliente">
+        <span style="font-size:10px;color:var(--text-soft);margin-top:3px;">Puxado do cadastro do cliente. Edite se necessário.</span>
+      </div>
       <div class="form-group full"><label>Equipamentos Avaliados</label><textarea id="laudo-equipamentos" placeholder="Liste câmeras, alarmes, cercas, etc. avaliados..."></textarea></div>
       <div class="form-group full"><label>Constatações Técnicas *</label><textarea id="laudo-constatacoes" placeholder="Descreva o que foi observado tecnicamente..."></textarea></div>
       <div class="form-group full"><label>Recomendações</label><textarea id="laudo-recomendacoes" placeholder="Sugestões de melhoria, reparo ou substituição..."></textarea></div>
@@ -984,7 +1014,7 @@
 // ═══════════════════════════════════════════════════════
 // CONFIGURAÇÃO — cole sua URL do Apps Script aqui:
 // ═══════════════════════════════════════════════════════
-const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5jejUiSX3LoDMPJWcemyVj8HVJoObq549yW7ZrUcbJsiheHolWKcz1eYEqfssdv8Z/exec';
+const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbx5G5TgBGAtp4oDevs0EkNA8wq52MlUJMde3zviCUo1y8COysISBqu2wfnaPYH3cdG1/exec';
 let API_URL = localStorage.getItem('fas_api_url') || API_URL_PADRAO;
 
 // ═══════════════════════════════════════════════════════
@@ -1371,6 +1401,7 @@ function updateDashboard(){
   [...(db.laudos||[]).slice(-3).reverse()].forEach(l=>acts.push(`📝 ${l.numero} — ${l.clienteNome} — <b style="color:var(--amber)">${l.conclusao}</b>`));
   document.getElementById('dash-activity').innerHTML=acts.length?acts.map(a=>`<div style="padding:9px 0;border-bottom:1px solid var(--navy-border);font-size:12px">${a}</div>`).join(''):'<p>Nenhuma atividade ainda.</p>';
   updateDashboardFollowup();
+  renderAgendaHoje();
 }
 
 function updateDashboardFollowup(){
@@ -1455,12 +1486,15 @@ function openClienteModal(id=null){
   const c=id?db.clientes.find(x=>x.id===id):{};
   document.getElementById('modal-cliente-title').textContent=id?'Editar Cliente':'Novo Cliente';
   ['nome','email','tel','doc','cidade','estado','endereco','obs'].forEach(k=>document.getElementById('cli-'+k).value=c[k]||'');
+  document.getElementById('cli-cep').value=c.cep||'';
+  document.getElementById('cli-complemento').value=c.complemento||'';
+  document.getElementById('cli-cep-status').textContent='';
   openModal('modal-cliente');
 }
 async function salvarCliente(){
   const nome=document.getElementById('cli-nome').value.trim();
   if(!nome){showToast('Nome é obrigatório');return;}
-  const row={id:editingId||genId(),nome,email:document.getElementById('cli-email').value,tel:document.getElementById('cli-tel').value,doc:document.getElementById('cli-doc').value,cidade:document.getElementById('cli-cidade').value,estado:document.getElementById('cli-estado').value,endereco:document.getElementById('cli-endereco').value,obs:document.getElementById('cli-obs').value};
+  const row={id:editingId||genId(),nome,email:document.getElementById('cli-email').value,tel:document.getElementById('cli-tel').value,doc:document.getElementById('cli-doc').value,cep:document.getElementById('cli-cep').value,cidade:document.getElementById('cli-cidade').value,estado:document.getElementById('cli-estado').value,endereco:document.getElementById('cli-endereco').value,complemento:document.getElementById('cli-complemento').value,obs:document.getElementById('cli-obs').value};
   closeModal('modal-cliente');
   showLoading(editingId?'Atualizando cliente...':'Salvando cliente...');
   try {
@@ -1474,8 +1508,14 @@ async function salvarCliente(){
 function renderClientes(filter=''){
   const list=filter?db.clientes.filter(c=>c.nome.toLowerCase().includes(filter.toLowerCase())):db.clientes;
   const empty='<div class="empty-state"><div class="empty-icon">👥</div>Nenhum cliente</div>';
-  document.getElementById('tbody-clientes').innerHTML=!list.length?`<tr><td colspan="4">${empty}</td></tr>`:list.map(c=>`<tr><td><b>${c.nome}</b><br><span style="color:#8ab0c8;font-size:11px">${c.email||''}</span></td><td>${c.tel||'—'}</td><td>${c.cidade||'—'}${c.estado?' - '+c.estado:''}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></td></tr>`).join('');
-  document.getElementById('cards-clientes').innerHTML=!list.length?empty:list.map(c=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${c.nome}</span></div><div class="row-card-meta">${c.tel?`<span>📞 ${c.tel}</span>`:''} ${c.email?`<span>✉ ${c.email}</span>`:''} ${c.cidade?`<span>📍 ${c.cidade}${c.estado?' - '+c.estado:''}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></div>`).join('');
+  document.getElementById('tbody-clientes').innerHTML=!list.length?`<tr><td colspan="4">${empty}</td></tr>`:list.map(c=>{
+    const addr=enderecoCliente(c);
+    return `<tr><td><b>${c.nome}</b><br><span style="color:#8ab0c8;font-size:11px">${c.email||''}</span></td><td>${linkWhatsApp(c.tel)}</td><td>${addr?linkMaps(addr,`${c.cidade||''}${c.estado?' - '+c.estado:''}`):(c.cidade||'—')+(c.estado?' - '+c.estado:'')}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></td></tr>`;
+  }).join('');
+  document.getElementById('cards-clientes').innerHTML=!list.length?empty:list.map(c=>{
+    const addr=enderecoCliente(c);
+    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${c.nome}</span></div><div class="row-card-meta">${c.tel?`<span>${linkWhatsApp(c.tel,'📞 '+c.tel)}</span>`:''} ${c.email?`<span>✉ ${c.email}</span>`:''} ${addr?`<span>${linkMaps(addr,'📍 '+(c.cidade||addr).substring(0,24))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></div>`;
+  }).join('');
 }
 async function delCliente(id){
   if(!confirm('Excluir cliente?'))return;
@@ -1657,7 +1697,9 @@ function novaOS(id=null){
   editingId = id;
   const os = id ? db.ordens.find(x=>x.id===id) : null;
   document.getElementById('modal-os-title').textContent = id ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço';
-  document.getElementById('os-cliente').innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${os&&c.id===os.clienteId?'selected':''}>${c.nome}</option>`).join('');
+  const sel = document.getElementById('os-cliente');
+  sel.innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${os&&c.id===os.clienteId?'selected':''}>${c.nome}</option>`).join('');
+  sel.onchange = function(){ onOsClienteSelect(this.value); };
   document.getElementById('os-data').value = os ? String(os.data).split('T')[0] : today();
   document.getElementById('os-tipo').value = os ? os.tipo : 'Instalação';
   document.getElementById('os-tecnico').value = os ? os.tecnico||'' : '';
@@ -1665,11 +1707,23 @@ function novaOS(id=null){
   document.getElementById('os-horario').value = os ? os.horario||'' : '';
   document.getElementById('os-duracao').value = os ? (os.duracao||'60') : '60';
   document.getElementById('os-sync-agenda').checked = true;
+  // Endereço do cliente (readonly)
+  const cl = os ? db.clientes.find(c=>c.id===os.clienteId) : null;
+  document.getElementById('os-endereco-cliente').value = cl ? enderecoCliente(cl) : '';
+  // Endereço de execução (editável)
   document.getElementById('os-endereco').value = os ? os.endereco||'' : '';
   document.getElementById('os-descricao').value = os ? os.descricao||'' : '';
   document.getElementById('os-materiais').value = os ? os.materiais||'' : '';
   document.getElementById('os-obs').value = os ? os.obs||'' : '';
   openModal('modal-os');
+}
+
+function onOsClienteSelect(clienteId){
+  const c = db.clientes.find(x=>x.id===clienteId);
+  document.getElementById('os-endereco-cliente').value = c ? enderecoCliente(c) : '';
+  // Preenche endereço de execução se estiver vazio
+  const endExec = document.getElementById('os-endereco');
+  if(c && !endExec.value) endExec.value = enderecoCliente(c);
 }
 
 // Status de OS que devem manter um horário reservado na agenda
@@ -1695,7 +1749,7 @@ async function salvarOS(){
     status: novoStatus,
     horario: document.getElementById('os-horario').value,
     duracao: document.getElementById('os-duracao').value,
-    endereco: document.getElementById('os-endereco').value,
+    endereco: document.getElementById('os-endereco').value || enderecoCliente(cliente),
     descricao, materiais: document.getElementById('os-materiais').value,
     obs: document.getElementById('os-obs').value,
     eventoCalendarId: existing ? (existing.eventoCalendarId || '') : '',
@@ -1771,8 +1825,16 @@ function renderOrdens(){
   const isCliente=currentUser&&currentUser.role==='cliente';
   const statusBadge = s => s==='Concluída'?'badge-green':s==='Cancelada'?'badge-red':s==='Em Andamento'?'badge-amber':'badge-blue';
   if(!list.length){ tbody.innerHTML=`<tr><td colspan="5">${empty}</td></tr>`; if(cards) cards.innerHTML=empty; return; }
-  tbody.innerHTML=list.map(o=>`<tr><td><b>${o.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(o.data)}</span></td><td>${o.clienteNome}</td><td>${o.tipo}</td><td><span class="badge ${statusBadge(o.status)}">${o.status}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></td></tr>`).join('');
-  if(cards) cards.innerHTML=list.map(o=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${o.numero}</span><span class="badge ${statusBadge(o.status)}">${o.status}</span></div><div class="row-card-meta"><span>👤 ${o.clienteNome}</span><span>🔧 ${o.tipo}</span><span>📅 ${fmtDate(o.data)}</span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></div>`).join('');
+  tbody.innerHTML=list.map(o=>{
+    const cl=db.clientes.find(x=>x.id===o.clienteId)||{};
+    const endExec=o.endereco||enderecoCliente(cl);
+    return `<tr><td><b>${o.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(o.data)}</span></td><td>${o.clienteNome}${cl.tel?'<br>'+linkWhatsApp(cl.tel,'📞 '+cl.tel):''}</td><td>${o.tipo}</td><td><span class="badge ${statusBadge(o.status)}">${o.status}</span>${endExec?'<br><span style="font-size:10px">'+linkMaps(endExec,'📍 '+endExec.substring(0,20)+'...')+'</span>':''}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></td></tr>`;
+  }).join('');
+  if(cards) cards.innerHTML=list.map(o=>{
+    const cl=db.clientes.find(x=>x.id===o.clienteId)||{};
+    const endExec=o.endereco||enderecoCliente(cl);
+    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${o.numero}</span><span class="badge ${statusBadge(o.status)}">${o.status}</span></div><div class="row-card-meta"><span>👤 ${o.clienteNome}</span>${cl.tel?`<span>${linkWhatsApp(cl.tel,'📞 '+cl.tel)}</span>`:''}<span>🔧 ${o.tipo}</span><span>📅 ${fmtDate(o.data)}</span>${endExec?`<span>${linkMaps(endExec,'📍 '+endExec.substring(0,24))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></div>`;
+  }).join('');
 }
 async function delOS(id){
   if(!confirm('Excluir ordem de serviço? O horário reservado na agenda também será liberado.'))return;
@@ -1802,8 +1864,8 @@ function viewOS(id){
   h += '<div style="margin-bottom:14px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
   h += '<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
   h += '<div style="font-size:13px;font-weight:700;color:#0E2432;">'+os.clienteNome+'</div>';
-  if(cl.tel) h += '<div style="font-size:11px;color:#374151;">Tel: '+cl.tel+'</div>';
-  if(os.endereco) h += '<div style="font-size:11px;color:#374151;">📍 '+os.endereco+'</div>';
+  if(cl.tel) h += '<div style="font-size:11px;color:#374151;">Tel: <a href="https://wa.me/55'+cl.tel.replace(/\D/g,'')+'" target="_blank" style="color:#25d366;text-decoration:none;">'+cl.tel+' 📲</a></div>';
+  if(os.endereco) h += '<div style="font-size:11px;color:#374151;"><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(os.endereco)+'" target="_blank" style="color:#e8500a;text-decoration:none;">📍 '+os.endereco+' 🗺</a></div>';
   h += '</div></div>';
   h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
   h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">TIPO</div><div style="font-size:12px;color:#111;">'+os.tipo+'</div></div>';
@@ -1830,15 +1892,26 @@ function viewOS(id){
 // ═══════════════════════════════════════════════════════
 // LAUDOS TÉCNICOS
 // ═══════════════════════════════════════════════════════
+function onLaudoClienteSelect(clienteId){
+  const c = db.clientes.find(x=>x.id===clienteId);
+  if(c) document.getElementById('laudo-endereco').value = enderecoCliente(c);
+}
+
 function novoLaudo(id=null){
   editingId = id;
   const laudo = id ? db.laudos.find(x=>x.id===id) : null;
   document.getElementById('modal-laudo-title').textContent = id ? 'Editar Laudo Técnico' : 'Novo Laudo Técnico';
-  document.getElementById('laudo-cliente').innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${laudo&&c.id===laudo.clienteId?'selected':''}>${c.nome}</option>`).join('');
+  const sel = document.getElementById('laudo-cliente');
+  sel.innerHTML = '<option value="">Selecionar...</option>' + db.clientes.map(c=>`<option value="${c.id}" ${laudo&&c.id===laudo.clienteId?'selected':''}>${c.nome}</option>`).join('');
   document.getElementById('laudo-data').value = laudo ? String(laudo.data).split('T')[0] : today();
   document.getElementById('laudo-tecnico').value = laudo ? laudo.tecnico||'' : '';
   document.getElementById('laudo-tipo').value = laudo ? laudo.tipo : 'Diagnóstico';
-  document.getElementById('laudo-endereco').value = laudo ? laudo.endereco||'' : '';
+  // Preenche endereço: se editando usa o salvo; se novo, preenche do cliente
+  if(laudo){
+    document.getElementById('laudo-endereco').value = laudo.endereco||'';
+  } else {
+    document.getElementById('laudo-endereco').value = '';
+  }
   document.getElementById('laudo-equipamentos').value = laudo ? laudo.equipamentos||'' : '';
   document.getElementById('laudo-constatacoes').value = laudo ? laudo.constatacoes||'' : '';
   document.getElementById('laudo-recomendacoes').value = laudo ? laudo.recomendacoes||'' : '';
@@ -1890,8 +1963,15 @@ function renderLaudos(){
   const isCliente=currentUser&&currentUser.role==='cliente';
   const conclusaoBadge = c => c==='Sistema Funcional'||c==='Aprovado'?'badge-green':c==='Sistema Comprometido'?'badge-red':'badge-amber';
   if(!list.length){ tbody.innerHTML=`<tr><td colspan="5">${empty}</td></tr>`; if(cards) cards.innerHTML=empty; return; }
-  tbody.innerHTML=list.map(l=>`<tr><td><b>${l.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(l.data)}</span></td><td>${l.clienteNome}</td><td>${fmtDate(l.data)}</td><td><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></td></tr>`).join('');
-  if(cards) cards.innerHTML=list.map(l=>`<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${l.numero}</span><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></div><div class="row-card-meta"><span>👤 ${l.clienteNome}</span><span>📅 ${fmtDate(l.data)}</span></div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></div>`).join('');
+  tbody.innerHTML=list.map(l=>{
+    const cl=db.clientes.find(x=>x.id===l.clienteId)||{};
+    return `<tr><td><b>${l.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(l.data)}</span></td><td>${l.clienteNome}${cl.tel?'<br>'+linkWhatsApp(cl.tel,'📞 '+cl.tel):''}</td><td>${fmtDate(l.data)}</td><td><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></td></tr>`;
+  }).join('');
+  if(cards) cards.innerHTML=list.map(l=>{
+    const cl=db.clientes.find(x=>x.id===l.clienteId)||{};
+    const addr=l.endereco||enderecoCliente(cl);
+    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${l.numero}</span><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></div><div class="row-card-meta"><span>👤 ${l.clienteNome}</span><span>📅 ${fmtDate(l.data)}</span>${cl.tel?`<span>${linkWhatsApp(cl.tel,'📞 '+cl.tel)}</span>`:''}${addr?`<span>${linkMaps(addr,'📍 '+addr.substring(0,22))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></div>`;
+  }).join('');
 }
 async function delLaudo(id){
   if(!confirm('Excluir laudo técnico?'))return;
@@ -1916,8 +1996,8 @@ function viewLaudo(id){
   h += '<div style="margin-bottom:14px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
   h += '<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
   h += '<div style="font-size:13px;font-weight:700;color:#0E2432;">'+laudo.clienteNome+'</div>';
-  if(cl.tel) h += '<div style="font-size:11px;color:#374151;">Tel: '+cl.tel+'</div>';
-  if(laudo.endereco) h += '<div style="font-size:11px;color:#374151;">📍 '+laudo.endereco+'</div>';
+  if(cl.tel) h += '<div style="font-size:11px;color:#374151;">Tel: <a href="https://wa.me/55'+cl.tel.replace(/\D/g,'')+'" target="_blank" style="color:#25d366;text-decoration:none;">'+cl.tel+' 📲</a></div>';
+  if(laudo.endereco) h += '<div style="font-size:11px;color:#374151;"><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(laudo.endereco)+'" target="_blank" style="color:#e8500a;text-decoration:none;">📍 '+laudo.endereco+' 🗺</a></div>';
   h += '</div></div>';
   h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
   h += '<div style="flex:1;min-width:140px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;">TIPO DE VISTORIA</div><div style="font-size:12px;color:#111;">'+laudo.tipo+'</div></div>';
@@ -2061,9 +2141,9 @@ function buildPDF(doc,type){
   h+='<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
   h+='<div style="font-size:13px;font-weight:700;color:#0E2432;">'+doc.clienteNome+'</div>';
   if(cl.doc) h+='<div style="font-size:11px;color:#374151;margin-top:2px;">CPF/CNPJ: '+cl.doc+'</div>';
-  if(cl.tel) h+='<div style="font-size:11px;color:#374151;">Tel: '+cl.tel+'</div>';
+  if(cl.tel) h+='<div style="font-size:11px;color:#374151;">Tel: <a href="https://wa.me/55'+cl.tel.replace(/\D/g,'')+'" target="_blank" style="color:#25d366;text-decoration:none;">'+cl.tel+' 📲</a></div>';
   if(cl.email) h+='<div style="font-size:11px;color:#374151;">Email: '+cl.email+'</div>';
-  if(cl.endereco) h+='<div style="font-size:11px;color:#374151;">'+cl.endereco+(cl.cidade?' - '+cl.cidade:'')+(cl.estado?'/'+cl.estado:'')+'</div>';
+  if(cl.endereco){const addrFull=cl.endereco+(cl.complemento?', '+cl.complemento:'')+(cl.cidade?' - '+cl.cidade:'')+(cl.estado?'/'+cl.estado:'');h+='<div style="font-size:11px;color:#374151;"><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addrFull)+'" target="_blank" style="color:#e8500a;text-decoration:none;">📍 '+addrFull+' 🗺</a></div>';}
   h+='</div></div>';
   // Itens
   h+='<div style="margin-bottom:12px;">';
@@ -2315,7 +2395,7 @@ function renderFollowup(){
   tbody.innerHTML = list.map(l=>{
     const {atrasado, proxTxt, interesseTxt} = rowHtml(l);
     return `<tr>
-      <td><b>${l.clienteNome}</b><br><span style="color:#8ab0c8;font-size:11px">${l.tipo||''}</span></td>
+      <td><b>${l.clienteNome}</b><br><span style="color:#8ab0c8;font-size:11px">${l.tipo||''}</span>${l.clienteTel?'<br>'+linkWhatsApp(l.clienteTel,'📞 '+l.clienteTel):''}</td>
       <td><span class="fu-badge-status fu-badge-${l.status}">${statusLabel(l.status)}</span></td>
       <td><span class="fu-prio-dot fu-prio-${l.prioridade}"></span> ${prioridadeLabel(l.prioridade).split(' ').slice(1).join(' ')}</td>
       <td class="${atrasado?'fu-atrasado':''}">${proxTxt}${atrasado?' ⚠️':''}</td>
@@ -2338,6 +2418,7 @@ function renderFollowup(){
       <div class="row-card-meta">
         <span><span class="fu-prio-dot fu-prio-${l.prioridade}"></span> ${prioridadeLabel(l.prioridade).split(' ').slice(1).join(' ')}</span>
         <span>🎯 ${interesseTxt}</span>
+        ${l.clienteTel?`<span>${linkWhatsApp(l.clienteTel,'📞 '+l.clienteTel)}</span>`:''}
         <span class="${atrasado?'fu-atrasado':''}">⏰ ${proxTxt}${atrasado?' ⚠️':''}</span>
       </div>
       <div class="row-card-actions">
@@ -2368,8 +2449,8 @@ function viewFollowup(id){
   h += '<div style="margin-bottom:14px;"><div style="font-size:9px;font-weight:800;text-transform:uppercase;color:#6b7280;margin-bottom:5px;">CLIENTE</div>';
   h += '<div style="background:#f4f6f9;border-left:4px solid #e8500a;padding:10px 12px;border-radius:0 6px 6px 0;">';
   h += '<div style="font-size:13px;font-weight:700;color:#0E2432;">'+l.clienteNome+'</div>';
-  if(l.clienteTel) h += '<div style="font-size:11px;color:#374151;">Tel: '+l.clienteTel+'</div>';
-  if(l.clienteEndereco) h += '<div style="font-size:11px;color:#374151;">📍 '+l.clienteEndereco+'</div>';
+  if(l.clienteTel) h += '<div style="font-size:11px;color:#374151;">Tel: <a href="https://wa.me/55'+l.clienteTel.replace(/\D/g,'')+'" target="_blank" style="color:#25d366;text-decoration:none;">'+l.clienteTel+' 📲</a></div>';
+  if(l.clienteEndereco) h += '<div style="font-size:11px;color:#374151;"><a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(l.clienteEndereco)+'" target="_blank" style="color:#e8500a;text-decoration:none;">📍 '+l.clienteEndereco+' 🗺</a></div>';
   h += '<div style="font-size:11px;color:#374151;">Tipo: '+(l.tipo||'—')+' • Origem: '+(l.origem||'—')+'</div>';
   h += '</div></div>';
   h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">';
@@ -2676,6 +2757,81 @@ async function carregarImagensSalvas() {
 
 // ── FILTER ──
 function filterLocal(type,val){if(type==='clientes')renderClientes(val);if(type==='produtos')renderProdutos(val);}
+
+// ═══════════════════════════════════════════════════════
+// CEP — busca automática via ViaCEP
+// ═══════════════════════════════════════════════════════
+function mascararCep(input){
+  let v = input.value.replace(/\D/g,'');
+  if(v.length > 5) v = v.substr(0,5) + '-' + v.substr(5,3);
+  input.value = v;
+}
+
+async function buscarCep(){
+  const cep = (document.getElementById('cli-cep').value||'').replace(/\D/g,'');
+  const status = document.getElementById('cli-cep-status');
+  if(cep.length !== 8){ status.textContent = 'CEP inválido. Digite 8 dígitos.'; status.style.color='var(--red)'; return; }
+  status.textContent = '🔍 Buscando...'; status.style.color='var(--text-soft)';
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await r.json();
+    if(d.erro){ status.textContent = 'CEP não encontrado.'; status.style.color='var(--red)'; return; }
+    document.getElementById('cli-endereco').value = (d.logradouro||'') + (d.bairro ? ', '+d.bairro : '');
+    document.getElementById('cli-cidade').value = d.localidade||'';
+    document.getElementById('cli-estado').value = d.uf||'';
+    status.textContent = '✓ Endereço preenchido!'; status.style.color='var(--green)';
+  } catch(e){ status.textContent = 'Erro ao buscar CEP.'; status.style.color='var(--red)'; }
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS — WhatsApp clicável e Google Maps clicável
+// ═══════════════════════════════════════════════════════
+function linkWhatsApp(tel, label){
+  if(!tel) return label||'—';
+  const num = tel.replace(/\D/g,'');
+  const url = `https://wa.me/55${num}`;
+  return `<a href="${url}" target="_blank" title="Abrir WhatsApp" style="color:var(--green);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">${label||tel}<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;opacity:.8"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></a>`;
+}
+
+function linkMaps(endereco, label){
+  if(!endereco) return label||'—';
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+  return `<a href="${url}" target="_blank" title="Abrir no Google Maps" style="color:var(--orange-h);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">${label||endereco}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></a>`;
+}
+
+// Endereço completo de um cliente como string
+function enderecoCliente(c){
+  if(!c) return '';
+  const parts = [c.endereco, c.complemento, c.cidade, c.estado].filter(Boolean);
+  return parts.join(', ');
+}
+
+// ═══════════════════════════════════════════════════════
+// AGENDA DO DIA — widget no dashboard
+// ═══════════════════════════════════════════════════════
+function renderAgendaHoje(){
+  const el = document.getElementById('dash-agenda-hoje');
+  if(!el) return;
+  const hojeStr = formatarDataISO(new Date());
+  const osDoDia = (db.ordens||[])
+    .filter(o => String(o.data).split('T')[0] === hojeStr && o.horario && STATUS_OS_AGENDA.includes(o.status))
+    .sort((a,b) => (a.horario||'').localeCompare(b.horario||''));
+
+  if(!osDoDia.length){
+    el.innerHTML = '<div style="padding:10px 0;color:var(--text-soft);">✅ Nenhum compromisso agendado para hoje.</div>';
+    return;
+  }
+  el.innerHTML = osDoDia.map(o => {
+    const endExec = o.endereco || enderecoCliente(db.clientes.find(c=>c.id===o.clienteId));
+    return `<div class="agenda-evento" onclick="viewOS('${o.id}')" style="cursor:pointer;margin-bottom:6px;">
+      <div class="agenda-evento-hora">${o.horario}</div>
+      <div class="agenda-evento-info">
+        <div class="agenda-evento-titulo">🛠 ${o.tipo} — ${o.clienteNome}</div>
+        <div class="agenda-evento-sub">${o.numero} • ${o.status}${endExec?' • '+endExec:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ═══════════════════════════════════════════════════════
 // AUTH
