@@ -1089,7 +1089,16 @@ async function apiDelete(sheet, id) {
 }
 async function apiGetAll(sheet) {
   const r = await api({ action:'getAll', sheet });
-  return r.data || [];
+  const data = r.data || [];
+  // Normaliza campos que podem vir como string do Sheets
+  if(sheet === 'Orcamentos' || sheet === 'Recibos'){
+    data.forEach(doc => {
+      if(doc.items && typeof doc.items === 'string'){
+        doc.items = parseItems(doc.items);
+      }
+    });
+  }
+  return data;
 }
 
 
@@ -1205,7 +1214,20 @@ function showSetupBanner() {
 }
 
 function loadLocalCache() {
-  try { const s = localStorage.getItem('fas_cache'); if(s) Object.assign(db, JSON.parse(s)); } catch(e){}
+  try {
+    const s = localStorage.getItem('fas_cache');
+    if(s) {
+      const parsed = JSON.parse(s);
+      ['orcamentos','recibos'].forEach(key => {
+        if(Array.isArray(parsed[key])){
+          parsed[key].forEach(doc => {
+            if(doc.items && typeof doc.items === 'string') doc.items = parseItems(doc.items);
+          });
+        }
+      });
+      Object.assign(db, parsed);
+    }
+  } catch(e){}
   renderAll();
 }
 function saveLocalCache() {
@@ -2022,22 +2044,29 @@ function viewLaudo(id){
 // PDF
 // ═══════════════════════════════════════════════════════
 function parseItems(raw){
+  if(Array.isArray(raw)) return raw;
+  if(!raw && raw !== 0) return [];
   let val = raw;
-  // Tenta parsear até 3 vezes (caso esteja stringificado múltiplas vezes)
-  for(let i=0; i<3; i++){
+  // Tenta parsear até 5x (Sheets pode double-stringify)
+  for(let i = 0; i < 5; i++){
     if(Array.isArray(val)) return val;
-    if(typeof val==='string'){
-      const trimmed = val.trim();
-      if(trimmed.startsWith('[') || trimmed.startsWith('"[')){
-        try{
-          val = JSON.parse(trimmed);
-          continue;
-        }catch(e){ break; }
-      } else {
-        break;
-      }
-    } else {
-      break;
+    if(typeof val !== 'string') break;
+    const t = val.trim();
+    if(!t) return [];
+    // Remove outer quotes se vier como '"[...]"'
+    const unquoted = (t.startsWith('"') && t.endsWith('"'))
+      ? t.slice(1,-1).replace(/\\"/g,'"') : t;
+    try {
+      val = JSON.parse(unquoted);
+    } catch(e) {
+      // Tenta decodificar entidades HTML que o Sheets às vezes injeta
+      try {
+        const decoded = unquoted
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&amp;/g, '&');
+        val = JSON.parse(decoded);
+      } catch(e2) { break; }
     }
   }
   return Array.isArray(val) ? val : [];
