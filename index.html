@@ -1001,6 +1001,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
       </button>
       <button class="btn btn-outline btn-sm" onclick="abrirEmail()" title="E-mail" style="flex-shrink:0;padding:6px 10px;">📧</button>
+      <button class="btn btn-outline btn-sm" id="btn-reparar-itens" onclick="repararItensCache()" title="Itens não aparecem? Clique aqui para reparar" style="flex-shrink:0;padding:6px 10px;color:#f59e0b;border-color:rgba(245,158,11,.4);display:none;">🔧 Reparar</button>
     </div>
     <div style="background:#d1d5db;border-radius:10px;padding:10px;overflow-y:auto;overflow-x:hidden;max-height:72vh;-webkit-overflow-scrolling:touch;">
       <div id="pdf-content"></div>
@@ -2045,37 +2046,75 @@ function viewLaudo(id){
 // ═══════════════════════════════════════════════════════
 function parseItems(raw){
   if(Array.isArray(raw)) return raw;
-  if(!raw && raw !== 0) return [];
+  if(raw === null || raw === undefined || raw === '') return [];
   let val = raw;
-  // Tenta parsear até 5x (Sheets pode double-stringify)
-  for(let i = 0; i < 5; i++){
+  for(let i = 0; i < 8; i++){
     if(Array.isArray(val)) return val;
-    if(typeof val !== 'string') break;
-    const t = val.trim();
-    if(!t) return [];
-    // Remove outer quotes se vier como '"[...]"'
-    const unquoted = (t.startsWith('"') && t.endsWith('"'))
-      ? t.slice(1,-1).replace(/\\"/g,'"') : t;
-    try {
-      val = JSON.parse(unquoted);
-    } catch(e) {
-      // Tenta decodificar entidades HTML que o Sheets às vezes injeta
-      try {
-        const decoded = unquoted
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&amp;/g, '&');
-        val = JSON.parse(decoded);
-      } catch(e2) { break; }
+    if(typeof val !== 'string') {
+      // Objeto mas não array — tenta converter
+      try { val = JSON.stringify(val); } catch(e){ break; }
+      continue;
     }
+    let t = val.trim();
+    if(!t) return [];
+    // Remove BOM ou caracteres invisíveis
+    t = t.replace(/^[\uFEFF\u200B]+/, '');
+    // Tenta variações
+    const candidates = [
+      t,
+      // Remove aspas externas
+      (t.startsWith('"') && t.endsWith('"')) ? t.slice(1,-1) : null,
+      // Unescape de escapes duplos
+      t.replace(/\\\\/g, '\\').replace(/\\"/g, '"'),
+      // Decodifica entidades HTML
+      t.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>'),
+    ].filter(Boolean);
+    let parsed = null;
+    for(const candidate of candidates){
+      try { parsed = JSON.parse(candidate); break; } catch(e){}
+    }
+    if(parsed === null) break;
+    val = parsed;
   }
   return Array.isArray(val) ? val : [];
+}
+
+// Repara todos os docs do cache que tenham items como string
+function repararItensCache(){
+  let fixed = 0;
+  ['orcamentos','recibos'].forEach(key => {
+    (db[key]||[]).forEach(doc => {
+      if(doc.items && typeof doc.items === 'string'){
+        const parsed = parseItems(doc.items);
+        if(parsed.length > 0){ doc.items = parsed; fixed++; }
+      } else if(!Array.isArray(doc.items)){
+        doc.items = [];
+      }
+    });
+  });
+  if(fixed > 0){
+    saveLocalCache();
+    renderOrcamentos();
+    renderRecibos();
+    showToast('✅ ' + fixed + ' documento(s) reparados! Tente abrir o orçamento novamente.');
+  } else {
+    showToast('ℹ️ Nenhum item corrompido encontrado no cache.');
+  }
 }
 
 function viewDoc(type,id){
   const doc=type==='orcamento'?db.orcamentos.find(x=>x.id===id):db.recibos.find(x=>x.id===id);
   if(!doc)return;
+  // DEBUG: inspecionar o campo items antes do parse
   const parsed = parseItems(doc.items);
+  const btnReparar = document.getElementById('btn-reparar-itens');
+  if(parsed.length === 0 && doc.total > 0){
+    // Items existem (total > 0) mas não conseguiu parsear — mostra botão de reparar
+    if(btnReparar) btnReparar.style.display = '';
+    console.warn('[FAS] items não parseados. tipo:', typeof doc.items, '| raw:', String(doc.items).substring(0,120));
+  } else {
+    if(btnReparar) btnReparar.style.display = 'none';
+  }
   viewingDoc={...doc, items: parsed, type};
   document.getElementById('modal-view-title').textContent=(type==='orcamento'?'📋 ':'🧾 ')+doc.numero;
   document.getElementById('pdf-content').innerHTML=buildPDF(viewingDoc,type);
