@@ -1514,7 +1514,7 @@ function renderClientes(filter=''){
   }).join('');
   document.getElementById('cards-clientes').innerHTML=!list.length?empty:list.map(c=>{
     const addr=enderecoCliente(c);
-    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${c.nome}</span></div><div class="row-card-meta">${c.tel?`<span>${linkWhatsApp(c.tel,'📞 '+c.tel)}</span>`:''} ${c.email?`<span>✉ ${c.email}</span>`:''} ${addr?`<span>${linkMaps(addr,'📍 '+(c.cidade||addr).substring(0,24))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></div>`;
+    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${c.nome}</span></div><div class="row-card-meta">${c.tel?`<span>${linkWhatsApp(c.tel,'📞 '+c.tel)}</span>`:''} ${c.email?`<span>✉ ${c.email}</span>`:''} ${addr?`<span>${linkMaps(addr,'📍 '+String(c.cidade||addr||'').substring(0,24))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="openClienteModal('${c.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delCliente('${c.id}')">🗑</button></div></div>`;
   }).join('');
 }
 async function delCliente(id){
@@ -1827,12 +1827,12 @@ function renderOrdens(){
   if(!list.length){ tbody.innerHTML=`<tr><td colspan="5">${empty}</td></tr>`; if(cards) cards.innerHTML=empty; return; }
   tbody.innerHTML=list.map(o=>{
     const cl=db.clientes.find(x=>x.id===o.clienteId)||{};
-    const endExec=o.endereco||enderecoCliente(cl);
+    const endExec=String(o.endereco||enderecoCliente(cl)||'');
     return `<tr><td><b>${o.numero}</b><br><span style="color:#8ab0c8;font-size:11px">${fmtDate(o.data)}</span></td><td>${o.clienteNome}${cl.tel?'<br>'+linkWhatsApp(cl.tel,'📞 '+cl.tel):''}</td><td>${o.tipo}</td><td><span class="badge ${statusBadge(o.status)}">${o.status}</span>${endExec?'<br><span style="font-size:10px">'+linkMaps(endExec,'📍 '+endExec.substring(0,20)+'...')+'</span>':''}</td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></td></tr>`;
   }).join('');
   if(cards) cards.innerHTML=list.map(o=>{
     const cl=db.clientes.find(x=>x.id===o.clienteId)||{};
-    const endExec=o.endereco||enderecoCliente(cl);
+    const endExec=String(o.endereco||enderecoCliente(cl)||'');
     return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${o.numero}</span><span class="badge ${statusBadge(o.status)}">${o.status}</span></div><div class="row-card-meta"><span>👤 ${o.clienteNome}</span>${cl.tel?`<span>${linkWhatsApp(cl.tel,'📞 '+cl.tel)}</span>`:''}<span>🔧 ${o.tipo}</span><span>📅 ${fmtDate(o.data)}</span>${endExec?`<span>${linkMaps(endExec,'📍 '+endExec.substring(0,24))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewOS('${o.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novaOS('${o.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delOS('${o.id}')">🗑</button>`}</div></div>`;
   }).join('');
 }
@@ -1970,7 +1970,7 @@ function renderLaudos(){
   if(cards) cards.innerHTML=list.map(l=>{
     const cl=db.clientes.find(x=>x.id===l.clienteId)||{};
     const addr=l.endereco||enderecoCliente(cl);
-    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${l.numero}</span><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></div><div class="row-card-meta"><span>👤 ${l.clienteNome}</span><span>📅 ${fmtDate(l.data)}</span>${cl.tel?`<span>${linkWhatsApp(cl.tel,'📞 '+cl.tel)}</span>`:''}${addr?`<span>${linkMaps(addr,'📍 '+addr.substring(0,22))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></div>`;
+    return `<div class="row-card-item"><div class="row-card-top"><span class="row-card-title">${l.numero}</span><span class="badge ${conclusaoBadge(l.conclusao)}">${l.conclusao}</span></div><div class="row-card-meta"><span>👤 ${l.clienteNome}</span><span>📅 ${fmtDate(l.data)}</span>${cl.tel?`<span>${linkWhatsApp(cl.tel,'📞 '+cl.tel)}</span>`:''}${addr?`<span>${linkMaps(addr,'📍 '+String(addr||'').substring(0,22))}</span>`:''}</div><div class="row-card-actions"><button class="btn btn-outline btn-sm" onclick="viewLaudo('${l.id}')">👁 Ver</button>${isCliente?'':`<button class="btn btn-outline btn-sm" onclick="novoLaudo('${l.id}')">✏ Editar</button><button class="btn btn-red btn-sm" onclick="delLaudo('${l.id}')">🗑</button>`}</div></div>`;
   }).join('');
 }
 async function delLaudo(id){
@@ -2824,7 +2824,7 @@ function renderAgendaHoje(){
     return;
   }
   el.innerHTML = osDoDia.map(o => {
-    const endExec = o.endereco || enderecoCliente(db.clientes.find(c=>c.id===o.clienteId));
+    const endExec = String(o.endereco || enderecoCliente(db.clientes.find(c=>c.id===o.clienteId)) || '');
     return `<div class="agenda-evento" onclick="viewOS('${o.id}')" style="cursor:pointer;margin-bottom:6px;">
       <div class="agenda-evento-hora">${o.horario}</div>
       <div class="agenda-evento-info">
